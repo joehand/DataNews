@@ -1,0 +1,11 @@
+{% extends "_base.html" %}
+
+{% block title %}Data News{% endblock title %}
+
+{% block content %}
+        <div class="container">
+            {% for post in posts %}
+                {% include "post.html" %}
+            {% endfor %}
+        </div>
+{% endblock %}

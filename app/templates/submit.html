@@ -1,0 +1,10 @@
+{% extends "_base.html" %}
+{% import "bootstrap_wtf.html" as wtf %}
+
+{% block title %}Submit | Data News{% endblock title %}
+
+{% block content %}
+        <div class="container">
+            {{ wtf.quick_form(form, action='/submit') }}
+        </div>
+{% endblock %}

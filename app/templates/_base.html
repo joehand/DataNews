@@ -1,0 +1,67 @@
+{% extends "bootstrap_base.html" %}
+
+{% block title %}PersonalAPI{% endblock title %}
+
+{% block body_content %}
+
+  {% block nav %}
+    <div class="navbar">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Data news</a>
+        </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="{{url_for('index')}}">Home</a></li>
+          <li class=""><a href="{{url_for('submit')}}">Submit</a></li>
+          {% if current_user.email %}
+            <li class=""><a href="{{url_for('security.logout')}}">Logout</a></li>
+          {% else %}
+            <li class=""><a href="{{url_for('security.login')}}">Login</a></li>
+            <li class=""><a href="{{url_for('security.register')}}">Register</a></li>
+          {% endif %}
+        </ul>
+        <p class="navbar-text pull-right">{{current_user.email}}</p>
+      </div>
+    </div>
+  {% endblock %}
+
+  {% block container %}
+    <div class="container">  
+    {% block messages %}
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+          <div class="row flashes"> 
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">
+                <button type="button" class="close" data-dismiss="alert">&times;</button>
+                {{ message }}
+              </div>
+            {% endfor %}
+          </div>
+          {% endif %}
+        {% endwith %}
+    {% endblock %}
+    {% block content %}
+        <div class="jumbotron">
+            <h1>Hello world!</h1>
+            <p></p>
+        </div>
+    {% endblock %}
+
+      <hr>
+
+    {% block footer %}
+      <footer>
+      <p>&copy; Hand 2013</p>
+      </footer>
+    {% endblock %}
+
+    </div> <!-- /container -->
+  {% endblock %}
+{% endblock %}
