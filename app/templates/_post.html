@@ -1,0 +1,6 @@
+<tr>
+    <td><i class="icon-thumbs-up-alt"></i></td>
+    <td><a href="{{post.url}}">{{post.title}}</a> <small class="text-muted">({{get_domain(post.url)}})</small></td>
+    <td><a href="{{url_for('item', id=post.id)}}">view comments ({{post.get_children(length=True)}})</a></td>
+    <td>{{post.user.email}}</td>
+</tr>

@@ -5,6 +5,16 @@
 
 {% block content %}
         <div class="container">
-            {{ wtf.quick_form(form, action='/submit') }}
+            <form class="form form-horizontal" method="post">
+              {{ form.hidden_tag() }}
+              {{ wtf.form_errors(form, "only") }}
+
+              {{ wtf.horizontal_field(form.url) }}
+              {{ wtf.horizontal_field(form.title) }}
+
+              <div class="form-actions">
+                 <button name="action_save" type="submit" class="btn btn-primary">Submit</button>
+              </div>
+            </form>
         </div>
 {% endblock %}

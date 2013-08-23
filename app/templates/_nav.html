@@ -1,0 +1,27 @@
+
+    <div class="navbar">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-ex1-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Data news</a>
+        </div>
+        <ul class="nav navbar-nav">
+          <li class="active"><a href="{{url_for('index')}}">Home</a></li>
+          <li class=""><a href="{{url_for('submit')}}">Submit</a></li>
+          {% if current_user.email %}
+            <li class=""><a href="{{url_for('security.logout')}}">Logout</a></li>
+          {% else %}
+            <li class=""><a href="{{url_for('security.login')}}">Login</a></li>
+          {% endif %}
+          {% if not current_user.is_anonymous() and current_user.is_admin() %}
+            <li class=""><a href="/admin/">Admin</a></li>
+          {% endif %}
+        </ul>
+        <p class="navbar-text pull-right">{{current_user.email}}</p>
+      </div>
+    </div>

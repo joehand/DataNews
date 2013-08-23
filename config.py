@@ -8,6 +8,9 @@ SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 SECURITY_TRACKABLE = True
 SECURITY_CHANGEABLE = True
 SECURITY_REGISTERABLE = True
+SECURITY_RECOVERABLE = True
+SECURITY_DEFAULT_REMEMBER_ME = True
+SECURITY_SEND_REGISTER_EMAIL = False
 
 #Mail config
 MAIL_SERVER = 'smtp.example.com'
@@ -17,7 +20,8 @@ MAIL_USERNAME = 'username'
 MAIL_PASSWORD = 'password'
 
 # Bootstrap Config (https://github.com/mbr/flask-bootstrap#configuration-options)
-BOOTSTRAP_USE_CDN = True
+BOOTSTRAP_USE_CDN = False #True when i have internet
+BOOTSTRAP_FONTAWESOME = True
 
 DEBUG_TB_PANELS = (
     'flask.ext.debugtoolbar.panels.versions.VersionDebugPanel',
