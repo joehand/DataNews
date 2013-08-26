@@ -64,7 +64,7 @@
 
 /* Comment Form and Input */
 .comment-form{
-    margin:10px 0 40px;
+    margin:10px 0 30px;
 }
 
 .comment-form .submit *{
@@ -80,8 +80,7 @@
 }
 
 textarea.comment-input {
-    height:45px;
-
+    height:55px;
     border: none;
     background: transparent;
     box-shadow: none;
