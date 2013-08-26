@@ -89,18 +89,6 @@ class User(db.Model, UserMixin):
                 return True
         return False
 
-    def get_votes(self):
-        num_votes = len(self.votes)
-        num_items = len(self.items.all())
-        votes = (num_votes - num_items)
-        return votes if votes > 0 else 0
-
-    def get_karma(self):
-        num_karma = len(self.karma)
-        num_items = len(self.items.all())
-        karma = (num_karma - num_items)
-        return karma if karma > 0 else 0
-
     @staticmethod
     def make_unique_name(name):
         if User.query.filter(

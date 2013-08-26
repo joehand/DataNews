@@ -45,8 +45,8 @@
                 {% endif %}
                   <div class="row">
                     <p class="col-md-12 col-lg-12">Created: {{pretty_date(user.created_at)}}</p>
-                    <p class="col-md-12 col-lg-12">Karma: {{user.get_karma()}}</p>
-                    <p class="col-md-12 col-lg-12">Votes: {{user.get_votes()}}</p>
+                    <p class="col-md-12 col-lg-12">Karma: {{user.karma|length}}</p>
+                    <p class="col-md-12 col-lg-12">Votes: {{user.votes|length}}</p>
                   </div>
               </div>
             </div>
