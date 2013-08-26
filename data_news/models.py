@@ -1,8 +1,8 @@
 from data_news import app, db
-from datetime import datetime
 from flask.ext.security import UserMixin, RoleMixin
-from sqlalchemy import func, case
 from flask.ext.sqlalchemy import Pagination
+from sqlalchemy import func, case
+from datetime import datetime
 from math import log
 
 epoch = datetime(1970, 1, 1)
@@ -26,6 +26,13 @@ class Role(db.Model, RoleMixin):
         return self.name
 
 class Vote(db.Model):
+    """ We keep track of very vote
+        Pretty simple here, we have:
+            an item they voted on, 
+            the voting user (user_from) 
+            and the author (user_to)
+            and the timestamp =)
+    """
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime)
     user_from_id = db.Column(db.Integer, db.ForeignKey('user.id'))
@@ -37,6 +44,10 @@ class Vote(db.Model):
 
 
 class User(db.Model, UserMixin):
+    """ Users!
+        Nothing too crazy here
+        The confirmed_at through login_count columns are updated by Flask-Security
+    """
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(255), unique=True)
     password = db.Column(db.String(255))
@@ -106,6 +117,14 @@ class User(db.Model, UserMixin):
 
 
 class Item(db.Model):
+    """ An item is any kind of post or comment
+        It should either have a url/title or have text
+        TODO: Right now kind is just a simple string ('post' or 'comment')
+              It should probably be another table, similar to Role
+        TODO?: There is no easy way to get the parent post for a deep nested comment
+               You have to do recursion on each parent. Should I make this a column?
+               parent currently refers to just the immediate parent (post or comment)
+    """
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String(140))
     url = db.Column(db.String(), unique=True)
@@ -159,7 +178,7 @@ class Item(db.Model):
 
     @property
     def comment_score(self):
-        """The hot formula from Reddit."""
+        """Give comments a score based on votes, replies."""
         votes = len(self.votes)
         comments = len(Item.query.filter_by(parent_id = self.id).all())
         s = votes * comments/10
@@ -170,6 +189,10 @@ class Item(db.Model):
 
     @classmethod
     def ranked_posts(cls, page):
+        """ Returns the top ranked posts by post_score
+            TODO: This should be an sqlalchemy query, but I kept breaking that =(
+
+        """
         items = cls.query.filter_by(kind = 'post').order_by(cls.timestamp.desc())
         items_paged = items.paginate(page)
         start = items_paged.per_page * (items_paged.page - 1)
@@ -180,6 +203,9 @@ class Item(db.Model):
         return items_paged
 
 class Twitter(db.Model):
+    """ Keep track of a few max id's for fetching via Twitter ID.
+        Should only be one row in this table
+    """
     id = db.Column(db.Integer, primary_key = True)
     max_mention_id = db.Column(db.Integer)
     max_fav_id = db.Column(db.Integer)

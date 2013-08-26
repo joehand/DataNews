@@ -8,6 +8,9 @@ from sqlalchemy import func
 
 
 class PostForm(Form):
+    """ Form to submit a Post
+        TODO: Put a note in about Markdown formatting?
+    """
     title = TextField('Title', description='',
                        validators=[required()])
     url = URLField('URL', description='',
@@ -17,11 +20,16 @@ class PostForm(Form):
     kind = HiddenField('')
 
 class CommentForm(Form):
+    """ Form to submit a Comment
+        TODO: Put a note in about Markdown formatting?
+    """
     text = TextAreaField('',validators=[required()])
     kind = HiddenField('')
     parent_id = HiddenField('')
 
 class UserForm(Form):
+    """ Form to edit the user
+    """
     name = TextField('Name',  validators=[required()], description="Public display name (Unique)")
     email = EmailField('Email',   validators=[email()])
     twitter = TextField('Twitter Username',   validators=[])
@@ -44,6 +52,9 @@ class UserForm(Form):
             return True
 
 class ExtendedRegisterForm(RegisterForm):
+    """ Extend the Flask-Security registration form
+        Makes email optional and adds a Name
+    """
     name = TextField('Display Name',  validators=[required()], description="Will be public")
     email = EmailField('Email (Optional)',  validators=[], description="Private, used for password reset")
 

@@ -4,6 +4,8 @@ from dateutil import tz
 from datetime import datetime
 
 def get_domain(url):
+    """ Return just the domain (and subdomain!) for a url
+    """
     parsed_uri = urlparse(url)
     domain = '{uri.netloc}'.format(uri=parsed_uri)
     domain = domain.replace('www.', '')
@@ -11,6 +13,8 @@ def get_domain(url):
     return domain
 
 def local_time(utc=False):
+    """ Make a utc time into a local time
+    """
     from_zone = tz.tzutc()
     to_zone = tz.tzlocal()
     if not utc:

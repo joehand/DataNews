@@ -1,5 +1,9 @@
-from data_news import api_manager
+from data_news import app, db
 from models import User, Item, Vote
+from flask.ext.restless import APIManager
+
+# Create the Flask-Restless API manager.
+api_manager = APIManager(app, flask_sqlalchemy_db=db)
 
 
 item_excludes = ['user', 'user_from', 'user_to']
