@@ -37,7 +37,7 @@ def item(id):
               (user can come from many places, like a post-item page or comment-item page)
     """
     form = CommentForm(request.values, kind="comment")
-    item = Item.query.get(id)
+    item = Item.query.get_or_404(id)
     if request.method == 'POST' and form.validate_on_submit():
         comment = Item(text = md.convert(form.text.data),
                        kind = "comment",
@@ -130,13 +130,13 @@ def comment(id):
         TODO: Same notes as above about vote pre/post save. Also the redirecting one.
     """
     # Intercept and Redirect human access to item/parent_id for commenting
-    if not request.headers.get('returnJSON', False):
+    if request.method == 'GET' and not request.headers.get('returnJSON', False):
         return redirect(url_for('item', id=id))
 
     #Otherwise send html form over json
     form = CommentForm(request.values, kind="comment")
-    item = Item.query.get(id)
-    if request.method == 'POST' and form.validate_on_submit():
+    item = Item.query.get_or_404(id)
+    if form.validate_on_submit():
         comment = Item(text = md.convert(form.text.data),
                        kind = "comment",
                        parent_id = item.id,
@@ -188,10 +188,7 @@ def user(name):
               If we do more complex stuff, 
               allow use to see 'public' profile via request arg
     """
-    user = User.query.filter_by(name = name).first()
-    if not user:
-        flash('User does not exist', category='danger')
-        return redirect(url_for('index'))
+    user = User.query.filter_by(name = name).first_or_404()
     if user == current_user:
         form = UserForm()
         if form.validate_on_submit():    
