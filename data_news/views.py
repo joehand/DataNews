@@ -30,9 +30,6 @@ def item(id):
     """ View for a singular item (post or comment)
         Form is used to comment on that post or comment
 
-        TODO: Figure out how to auto add a vote to a comment rather than doing it here
-              There is probably some way to do a pre/post save function in model
-
         TODO: Redirect to orginal URL after comment instead of parent_id like we do now
               (user can come from many places, like a post-item page or comment-item page)
     """
@@ -49,14 +46,7 @@ def item(id):
         db.session.add(comment)
         db.session.commit()
 
-        vote = Vote(user_from_id = current_user.id,
-                    user_to_id = current_user.id,
-                    item_id = comment.id,
-                    timestamp = datetime.utcnow())
-
-        db.session.add(vote)
-        db.session.commit()
-        flash('Thanks for keeping the discussion alive!', category = 'success')
+        flash('Thanks for adding to the discussion!', category = 'success')
         return redirect(url_for('item', id=item.id) + '#item-' + str(comment.id)) 
     return render_template('item.html',
         item = item, form = form, title=item.title)
@@ -87,7 +77,6 @@ def items(page = 1):
 def submit():
     """ Submit a new post!
 
-        TODO: Same todo about vote on pre/post save as above
         TODO?: Where should I redirect to after this?
     """
     form = PostForm(request.values, kind="post")
@@ -107,13 +96,6 @@ def submit():
         db.session.add(post)
         db.session.commit()
 
-        vote = Vote(user_from_id = current_user.id,
-                    user_to_id = current_user.id,
-                    item_id = post.id,
-                    timestamp = datetime.utcnow())
-
-        db.session.add(vote)
-        db.session.commit()
         flash('Thanks for the submission!', category = 'success')
         return redirect(url_for('item', id=post.id)) 
     return render_template('submit.html', form=form, title='Submit')
@@ -127,7 +109,7 @@ def comment(id):
         This page is accessed via ajax when hitting 'reply' link on comment
         No humans should come here. No big deal if they do, its just not exciting =).
 
-        TODO: Same notes as above about vote pre/post save. Also the redirecting one.
+        TODO: Same note as above - the redirecting one.
     """
     # Intercept and Redirect human access to item/parent_id for commenting
     if request.method == 'GET' and not request.headers.get('returnJSON', False):
@@ -147,13 +129,6 @@ def comment(id):
         db.session.add(comment)
         db.session.commit()
 
-        vote = Vote(user_from_id = current_user.id,
-                    user_to_id = current_user.id,
-                    item_id = comment.id,
-                    timestamp = datetime.utcnow())
-
-        db.session.add(vote)
-        db.session.commit()
         flash('Thanks for keeping the discussion alive!', category = 'success')
         return redirect(url_for('item', id=item.id) + '#item-' + str(comment.id)) 
     return jsonify(html = render_template('_comment_form.html',
