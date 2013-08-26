@@ -31,3 +31,4 @@ DEBUG_TB_PANELS = (
     'flask.ext.debugtoolbar.panels.template.TemplateDebugPanel',
     'flask.ext.debugtoolbar.panels.logger.LoggingPanel'
 )
+DEBUG_TB_INTERCEPT_REDIRECTS = False

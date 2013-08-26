@@ -1,0 +1,55 @@
+{% extends "_base.html" %}
+{% import "bootstrap_wtf.html" as wtf %}
+
+{% block content %}
+        <div class="row">
+
+            <div class="panel panel-default">
+              <div class="panel-heading">
+                <h3 class="panel-title">User: <b>{{user.name}}</b>
+
+                  <a class="pull-right" href="{{url_for('items', user_id=user.id, kind='comment')}}" data-pjax="true">Comments</a>
+                  <span class="pull-right">&nbsp;|&nbsp;</span>
+                  <a class="pull-right" href="{{url_for('items', user_id=user.id, kind='post')}}" data-pjax="true">Posts</a>
+                </h3>
+              </div>
+              <div class="panel-body">
+                {% if form %}
+                <form class="form form-inline row" method="post" action="">
+                  <div class="col-md-12 col-lg-12">
+                    <div class="col-md-10 col-lg-10">
+                    {{ form.hidden_tag() }}
+                    {{ wtf.form_errors(form, "only") }}
+
+                    {{ wtf.inline_wtf(form.name, value=user.name) }}
+                    {% if user.email %}
+                      {{ wtf.inline_wtf(form.email, value=user.email) }}
+                    {% else %}
+                      {{ wtf.inline_wtf(form.email, placeholder='Email Address') }}
+                    {% endif %}
+                    {% if user.twitter_handle %}
+                      {{ wtf.inline_wtf(form.twitter, value=user.twitter_handle, input_addon='@') }}
+                    {% else %}
+                      {{ wtf.inline_wtf(form.twitter, placeholder='Twitter Username', input_addon='@') }}
+                    {% endif %}
+                    </div>
+                    <div class="form-actions col-md-2 col-lg-2 user-buttons">
+                       <button name="action_save" type="submit" class="btn btn-primary">Submit Changes</button>
+                       <a class="btn btn-default" href="{{ url_for_security('change_password') }}">Change Password</a>
+                    </div>
+                  </div>
+                </form>
+                  <div class="row">
+                    <p class="col-md-12 col-lg-12">Login Count: {{user.login_count}}</p>
+                  </div>
+                {% endif %}
+                  <div class="row">
+                    <p class="col-md-12 col-lg-12">Created: {{pretty_date(user.created_at)}}</p>
+                    <p class="col-md-12 col-lg-12">Karma: {{user.get_karma()}}</p>
+                    <p class="col-md-12 col-lg-12">Votes: {{user.get_votes()}}</p>
+                  </div>
+              </div>
+            </div>
+
+        </div>
+{% endblock %}

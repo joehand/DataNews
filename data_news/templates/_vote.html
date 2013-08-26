@@ -1,0 +1,14 @@
+{% if comment %}
+    {% set vote_item = comment %}
+{% elif item %}
+    {% set vote_item = item %}
+{% endif %}
+{% if current_user.id %}
+    {% if vote_item.user.id == current_user.id or vote_item.voted_for(current_user.id) %}
+    <span class="up-vote invisible" data-item="item-{{vote_item.id}}"><i class="icon-chevron-up"></i></span>
+    {% else %}
+    <span class="up-vote" data-item="item-{{vote_item.id}}"><i class="icon-chevron-up"></i></span>
+    {% endif %}
+{% else %}
+<span class="up-vote" data-item="item-{{vote_item.id}}"><i class="icon-chevron-up"></i></span>
+{% endif %}

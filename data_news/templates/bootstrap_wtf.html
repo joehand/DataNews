@@ -1,0 +1,95 @@
+{%- macro inline_field(field) %}
+{%- with required = "required" if kwargs['required'] or field.flags.required else "" -%}
+{{field(class="form-control", placeholder=field.label.text, required=required, **kwargs)}}
+{%- endwith %}
+{%- endmacro %}
+
+{%- macro comment_field(field) %}
+<div class="form-group {% if field.errors %}has-error{% endif %}">
+  <div class="col-lg-12 col-md-12">
+    {{field(class="form-control input-lg comment-input", placeholder="Add a comment", **kwargs)|safe}}
+    {%- if field.errors %}
+      {%- for error in field.errors %}
+        <p class="help-block">{{error}}</p>
+      {%- endfor %}
+    {%- elif field.description -%}
+      <p class="help-block">{{field.description|safe}}</p>
+    {%- endif %}
+  </div>
+</div>
+{% endmacro %}
+
+{%- macro inline_wtf(field, input_addon=None) %}
+<div class="form-group col-md-4 col-lg-4 {% if field.errors %}has-error{% endif %}">
+    {{field.label(class="sr-only")}}
+    {%- if input_addon %}
+      <div class="input-group">
+          <span class="input-group-addon">{{input_addon}}</span>
+          {{field(class="form-control", **kwargs)|safe}}
+      </div>
+    {%- else %}
+    {{field(class="form-control", **kwargs)|safe}}
+    {%- endif %}
+    {%- if field.errors %}
+      {%- for error in field.errors %}
+        <p class="help-block">{{error}}</p>
+      {%- endfor %}
+    {%- elif field.description -%}
+      <p class="help-block">{{field.description|safe}}</p>
+    {%- elif description -%}
+      <p class="help-block">{{description|safe}}</p>
+    {%- endif %}
+</div>
+{%- endmacro %}
+
+
+{%- macro horizontal_field(field, description=None) %}
+<div class="form-group {% if field.errors %}has-error{% endif %}">
+  {{field.label(class="control-label col-lg-2 col-md-2")}}
+    <div class="col-lg-4 col-md-4">
+    {{field(class="form-control", **kwargs)|safe}}
+
+    {%- if field.errors %}
+      {%- for error in field.errors %}
+        <p class="help-block">{{error}}</p>
+      {%- endfor %}
+    {%- elif field.description -%}
+      <p class="help-block">{{field.description|safe}}</p>
+    {%- elif description -%}
+      <p class="help-block">{{description|safe}}</p>
+    {%- endif %}
+  </div>
+</div>
+{% endmacro %}
+
+{% macro form_errors(form, hiddens=True) %}
+{%- if form.errors %}
+{%- for fieldname, errors in form.errors.iteritems() %}
+{%- if (form[fieldname]|bootstrap_is_hidden_field and hiddens) or
+       (form[fieldname]|bootstrap_is_hidden_field and hiddens != 'only') %}
+{%- for error in errors %}
+<p class="error">{{error}}</p>
+{%- endfor %}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+{%- endmacro %}
+
+{% macro quick_form(form, action=".", method="post", class="form form-horizontal", buttons = [('submit', 'primary', 'Save')], enctype=None) %}
+<form action="{{action}}" method="{{method}}" class="{{class}}"{% if enctype %} enctype="{{enctype}}"{% endif %}>
+  {{ form.hidden_tag() }}
+  {{ form_errors(form, 'only') }}
+  {%- for field in form %}
+  {% if not field|bootstrap_is_hidden_field %}
+  {{ horizontal_field(field) }}
+  {%- endif %}
+  {%- endfor %}
+  <div class="form-group">
+    <div class="col-offset-2 col-lg-10 col-md-10">
+    {% for name, type, text in buttons %}
+      <button name="{{name}}" type="submit" class="btn btn-{{type}}">{{text}}</button>
+    {%- endfor %}
+    </div>
+  </div>
+</form>
+{%- endmacro %}

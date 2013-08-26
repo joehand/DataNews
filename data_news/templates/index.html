@@ -1,0 +1,25 @@
+{% extends "_base.html" %}
+
+{% block title %}Home {% endblock title %}
+
+{% block content %}
+            <div class="row">
+            {% for item in items.items %}
+                {% if item.kind == 'post' %}
+                    {% include "_post.html" %}
+                {% elif item.kind == 'comment' %}
+                    {% include "_comment.html" %}
+                {% endif %}
+            {% endfor %}
+            </div>
+
+            {% if items.has_next %}
+            <div class="row next">
+                {% if "/items" in request.path  %}
+                <a href="{{ url_for('items', page = items.next_num, **filters) }}" data-pjax="true">More</a>
+                {% else %}
+                <a href="{{ url_for('index', page = items.next_num) }}" data-pjax="true">More</a>
+                {% endif %}
+            </div>
+            {% endif %}
+{% endblock %}

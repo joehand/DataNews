@@ -1,6 +1,6 @@
 import os
 
-from app import app
+from data_news import app
 
 #runs the app
 if __name__ == '__main__':

@@ -59,3 +59,4 @@ sftp-config*.json
 venv
 db_repository
 app.db
+.webassets-cache

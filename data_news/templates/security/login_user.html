@@ -1,0 +1,35 @@
+{% extends "_base.html" %}
+{% import "bootstrap_wtf.html" as wtf %}
+
+{% block title %}Login {% endblock title %}
+
+{% block content %}
+<h1>Login <small>| <a href="{{ url_for_security('register') }}" data-pjax="true">Register</a></small></h1>
+<br/>
+<form class="form form-horizontal" action="{{ url_for_security('login') }}" method="POST" name="login_user_form">
+  {{ login_user_form.hidden_tag() }}
+  {{ wtf.horizontal_field(login_user_form.email) }}
+  {{ wtf.horizontal_field(login_user_form.password) }}
+  {% if security.recoverable %}
+  <div class="form-group">
+    <div class="col-md-offset-2 col-md-10 col-lg-offset-2 col-lg-10"><small><a href="{{ url_for_security('forgot_password') }}" data-pjax="true">Forgot Password?</a></small>
+    </div>
+  </div>
+  {% endif %}
+  {{ wtf.inline_field(login_user_form.next) }}
+  <div class="form-group">
+    <div class="col-md-offset-2 col-md-10 col-lg-offset-2 col-lg-10">
+      <div class="checkbox">
+        <label>
+          <input id="remember" name="remember" type="checkbox" value="y" checked='checked'> Remember Me
+        </label>
+      </div>
+    </div>
+  </div>
+  <div class="form-group">
+    <div class="col-md-offset-2 col-md-10 col-lg-offset-2 col-lg-10">
+      <input id="submit" class="btn btn-primary" name="submit" type="submit" value="Login">
+    </div>
+  </div>
+</form>
+{% endblock content %}

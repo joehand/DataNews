@@ -1,0 +1,59 @@
+{% if "X-PJAX" not in request.headers %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+{% endif -%}
+    <title>
+      {%- block title %}
+      {%- if title %}
+        {{title}}
+      {% elif item and item.title %}
+        {{item.title}}
+      {% elif item and item.parent.title %}
+        {{item.parent.title}}
+      {% endif -%}
+      {% endblock title -%} | Data News
+    </title>
+{%- if "X-PJAX" not in request.headers %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{% block description %}{{description}}{% endblock description %}">
+    <meta name="author" content="{% block author %}{{author}}{% endblock author %}">
+
+    {%- block style %}
+      {% include "_css.html" %}
+    {%- endblock style %}
+  </head>
+  <body>
+    
+  {%- block nav %}
+    {% include "_nav.html" %}
+  {% endblock nav -%}
+
+    <div class="container">  
+    <div id="main" role="main"> 
+{% endif %}
+    {%- block messages -%}
+      {% include "_messages.html" %}
+    {%- endblock messages -%}
+
+    {%- block content %}
+    {% endblock content -%}
+
+{% if "X-PJAX" not in request.headers %}
+    </div> <!-- #main -->
+
+    {% block footer %}
+      <footer class="row">
+      <hr>
+      <p>&copy; Hand 2013</p>
+      </footer>
+    {% endblock footer %}
+
+    </div> <!-- /container -->
+  {%- block js %}
+    {% include "_js.html" %}
+  {%- endblock js %}
+  </body>
+</html>
+{% endif %}

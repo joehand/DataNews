@@ -1,0 +1,20 @@
+<div class="post col-lg-12 col-md-12" id="item-{{item.id}}" data-id="{{item.id}}" data-user="{{item.user.id}}">
+    <div class="row post-title">
+        <h4>
+            {% include "_vote.html" %}
+            <span class="vote-count label label-default"><b>{{item.votes|length}}</b></span>
+            <a href="{{item.url}}" data-pjax="true">{{item.title|safe}}</a> 
+            <small class="text-muted">({{get_domain(item.url)}})</small>
+        </h4>
+    </div>
+    <div class="row post-info">
+        <p>From <a href="{{url_for('user', name=item.user.name)}}" data-pjax="true">{{item.user.name}}</a>
+        <span>{{pretty_date(item.timestamp)}}</span> | 
+        <span><a href="{{url_for('item', id=item.id)}}" data-pjax="true">{{item.get_children()|length}} comments</a></span></p>
+    </div>
+    {% if item_page %}
+        <div class="row post-text">
+            {{item.text|safe|urlize}}
+        </div>
+    {% endif %}
+</div>
