@@ -6,7 +6,7 @@
           <h1>Submit Post</h1><br/>
         </div>
         <div class="row">
-            <form class="form form-horizontal" method="post">
+            <form class="form form-horizontal" method="post" action="{{request.url}}" data-pjax>
               {{ form.hidden_tag() }}
               {{ wtf.form_errors(form, "only") }}
 

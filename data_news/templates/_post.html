@@ -3,14 +3,14 @@
         <h4>
             {% include "_vote.html" %}
             <span class="vote-count label label-default"><b>{{item.votes|length}}</b></span>
-            <a href="{{item.url}}" data-pjax="true">{{item.title|safe}}</a> 
+            <a href="{{item.url}}" data-pjax>{{item.title|safe}}</a> 
             <small class="text-muted">({{get_domain(item.url)}})</small>
         </h4>
     </div>
     <div class="row post-info">
-        <p>From <a href="{{url_for('user', name=item.user.name)}}" data-pjax="true">{{item.user.name}}</a>
+        <p>From <a href="{{url_for('user', name=item.user.name)}}" data-pjax>{{item.user.name}}</a>
         <span>{{pretty_date(item.timestamp)}}</span> | 
-        <span><a href="{{url_for('item', id=item.id)}}" data-pjax="true">{{item.get_children()|length}} comments</a></span></p>
+        <span><a href="{{url_for('item', id=item.id)}}" data-pjax>{{item.get_children()|length}} comments</a></span></p>
     </div>
     {% if item_page %}
         <div class="row post-text">

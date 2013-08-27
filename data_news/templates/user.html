@@ -8,14 +8,14 @@
               <div class="panel-heading">
                 <h3 class="panel-title">User: <b>{{user.name}}</b>
 
-                  <a class="pull-right" href="{{url_for('items', user_id=user.id, kind='comment')}}" data-pjax="true">Comments</a>
+                  <a class="pull-right" href="{{url_for('items', user_id=user.id, kind='comment')}}" data-pjax>Comments</a>
                   <span class="pull-right">&nbsp;|&nbsp;</span>
-                  <a class="pull-right" href="{{url_for('items', user_id=user.id, kind='post')}}" data-pjax="true">Posts</a>
+                  <a class="pull-right" href="{{url_for('items', user_id=user.id, kind='post')}}" data-pjax>Posts</a>
                 </h3>
               </div>
               <div class="panel-body">
                 {% if form %}
-                <form class="form form-inline row" method="post" action="">
+                <form class="form form-inline row" method="post" action="{{request.url}}">
                   <div class="col-md-12 col-lg-12">
                     <div class="col-md-10 col-lg-10">
                     {{ form.hidden_tag() }}
@@ -35,7 +35,7 @@
                     </div>
                     <div class="form-actions col-md-2 col-lg-2 user-buttons">
                        <button name="action_save" type="submit" class="btn btn-primary">Submit Changes</button>
-                       <a class="btn btn-default" href="{{ url_for_security('change_password') }}">Change Password</a>
+                       <a class="btn btn-default" href="{{ url_for_security('change_password') }}" data-pjax>Change Password</a>
                     </div>
                   </div>
                 </form>

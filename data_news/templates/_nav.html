@@ -2,7 +2,7 @@
   {% if request.endpoint == endpoint %} 
     {% set cls='active' %}
   {% endif %}
-  <li class='{{cls}} pjax-active'><a href="{{url_for(endpoint, **url_args)}}" data-pjax="true">{{display}}</a>
+  <li class='{{cls}} pjax-active'><a href="{{url_for(endpoint, **url_args)}}" data-pjax>{{display}}</a>
 {% endmacro %}
 
     <div class="navbar navbar-static-top" role="navigation">
@@ -14,7 +14,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="{{url_for('index')}}" data-pjax="true">Data news</a>
+          <a class="navbar-brand" href="{{url_for('index')}}" data-pjax>Data news</a>
         </div>
         <ul class="nav navbar-nav">
           {{nav_link('index', 'Home')}}
@@ -25,7 +25,7 @@
         </ul>
         <ul class="nav navbar-nav navbar-right">
           {% if current_user.id %}
-            <li class="pjax-active"><a href="{{url_for('user', name=current_user.name)}}" data-pjax="true">{{current_user.name}}</a></li>
+            <li class="pjax-active"><a href="{{url_for('user', name=current_user.name)}}" data-pjax>{{current_user.name}}</a></li>
             <li class=""><a href="{{url_for('security.logout')}}">Logout</a></li>
           {% else %}
             <li class=""><a href="{{url_for('security.login')}}">Login</a></li>

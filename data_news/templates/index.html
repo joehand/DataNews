@@ -16,9 +16,9 @@
             {% if items.has_next %}
             <div class="row next">
                 {% if "/items" in request.path  %}
-                <a href="{{ url_for('items', page = items.next_num, **filters) }}" data-pjax="true">More</a>
+                <a href="{{ url_for('items', page = items.next_num, **filters) }}" data-pjax>More</a>
                 {% else %}
-                <a href="{{ url_for('index', page = items.next_num) }}" data-pjax="true">More</a>
+                <a href="{{ url_for('index', page = items.next_num) }}" data-pjax>More</a>
                 {% endif %}
             </div>
             {% endif %}

@@ -144,8 +144,10 @@ define(['backbone', 'jquery', 'model/model'], function(Backbone, $, VoteModel) {
             // Also need to re-init any child views.
 
             var self = this;
+            //Init the pjax for links
             $(document).pjax('a[data-pjax]', self.id);
 
+            //Init the pjax for forms
             $(document).on('submit', 'form[data-pjax]', function(event) {
                 $.pjax.submit(event, '#main');
             });

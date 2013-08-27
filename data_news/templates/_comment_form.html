@@ -1,5 +1,5 @@
 {% import "bootstrap_wtf.html" as wtf %}
-<form class="form form-horizontal comment-form {% if not item_page %}comment-inline{% endif %}"method="post" action="{{request.url}}" data-pjax="true">
+<form class="form form-horizontal comment-form {% if not item_page %}comment-inline{% endif %}"method="post" action="{{request.url}}" data-pjax>
   {{ form.hidden_tag() }}
   {{ wtf.form_errors(form, "only") }}
   

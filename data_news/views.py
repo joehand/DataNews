@@ -38,7 +38,7 @@ def index(page = 1):
 
     posts = Item.ranked_posts(page)
     if current_user.is_anonymous() and page==1:
-        flash('Welcome! <a class="alert-link" href="%s">Register here</a> to start contributing or just browse.' % url_for("security.register"))
+        flash('Welcome! <a class="alert-link" href="%s" data-pjax>Register here</a> to start contributing or just browse.' % url_for("security.register"))
     return render_template('index.html',
         items = posts)
 
@@ -103,10 +103,9 @@ def submit():
             return redirect(url_for('item', id=post.id))
 
         post = submit_item(url = form.url.data,
-                    title = form.title.data, 
-                    text = form.text.data, 
-                    parent_id = item.id,
-                    kind = 'post')
+                           title = form.title.data, 
+                           text = form.text.data,
+                           kind = 'post')
 
         flash('Thanks for the submission!', category = 'success')
         return redirect(url_for('item', id=post.id)) 
@@ -184,6 +183,6 @@ def user(name):
             user.twitter_handle = form.twitter.data
             db.session.commit()
             flash('Your edits are saved, thanks.', category = 'info')
-            return redirect(url_for('user', name=name)) 
+            return redirect(url_for('user', name=form.name.data)) 
         return render_template('user.html', user=user, form=form, title=user.name)
     return render_template('user.html', user=user, title=user.name)
