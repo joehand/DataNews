@@ -47,8 +47,8 @@ def item(id):
     """ View for a singular item (post or comment)
         Form is used to comment on that post or comment
 
-        TODO: Redirect to orginal URL after comment instead of parent_id like we do now
-              (user can come from many places, like a post-item page or comment-item page)
+        Redirection is kinda weak right now. 
+        Its set via js when form is submitted (request headers)
     """
     item = Item.query.get_or_404(id)
 
@@ -120,7 +120,11 @@ def comment(id):
         This page is accessed via ajax when hitting 'reply' link on comment
         No humans should come here. No big deal if they do, its just not exciting =).
 
-        TODO: Same note as above - the redirecting one.
+        Redirection is kinda weak right now. 
+        Its set via js when form is submitted (request headers)
+
+        TODO: Expand this to be used for any comment input or editing
+              Could also work with post editing?
     """
     # Intercept and Redirect human access to item/parent_id for commenting
     if request.method == 'GET' and not request.headers.get('returnJSON', False):
@@ -136,7 +140,7 @@ def comment(id):
 
         comment = submit_item(text=form.text.data, parent_id=item.id)
 
-        flash('Thanks for keeping the discussion alive!', category = 'success')
+        flash('Thanks for adding to the discussion!', category = 'success')
 
         if next_url:
             return redirect(next_url + '#item-' + str(comment.id))
