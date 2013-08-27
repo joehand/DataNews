@@ -2,6 +2,7 @@ from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.security.signals import user_registered
 from flask.ext.security import Security, SQLAlchemyUserDatastore, current_user
+from flask.ext.mail import Mail
 from flask.ext.bootstrap import Bootstrap
 from flask.ext.assets import Environment
 from datetime import datetime
@@ -35,6 +36,7 @@ def user_registered_sighandler(app, user, confirm_token):
 
 
 #Add various extensions
+mail = Mail(app)
 bootstrap = Bootstrap(app)
 assets = Environment(app)
 
