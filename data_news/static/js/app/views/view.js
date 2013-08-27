@@ -145,6 +145,15 @@ define(['backbone', 'jquery', 'model/model'], function(Backbone, $, VoteModel) {
 
             var self = this;
             $(document).pjax('a[data-pjax]', self.id);
+
+            $(document).on('submit', 'form[data-pjax]', function(event) {
+                $.pjax.submit(event, '#main');
+            });
+
+            $(document).on('pjax:beforeSend', function(e, xhr) {
+                xhr.setRequestHeader('source_url', document.URL);
+            });
+
             self.$el.on('pjax:end', function(e) {
                 self.itemViews = []; // Clear old Item views
                 self.initAllItems(); // Make new ones!

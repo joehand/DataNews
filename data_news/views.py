@@ -3,12 +3,29 @@ from flask import render_template, request, flash, redirect, url_for, jsonify, s
 from flask.ext.security import login_required, current_user
 from datetime import datetime
 from markdown import Markdown
+from bleach import clean
 from models import Item, User, Vote
 from forms import PostForm, CommentForm, UserForm
 
-md = Markdown(safe_mode='replace', 
-                        html_replacement_text='--RAW HTML NOT ALLOWED--')
 
+def submit_item(url=None, title=None, text=None, 
+                    kind='comment', parent_id=None):
+    """ Submits an item (post or comment) to db
+    """      
+    md = Markdown()
+    allowed_tags = ['p','em','strong','code','pre','blockquote','ul','li','ol']
+    item = Item(url = url,
+                title = title,
+                text = clean(md.convert(text), allowed_tags),
+                kind = kind,
+                parent_id = parent_id,
+                timestamp = datetime.utcnow(),
+                user_id = current_user.id)
+
+    db.session.add(item)
+    db.session.commit()
+
+    return item
 
 @app.route('/')
 @app.route('/<int:page>')
@@ -33,21 +50,19 @@ def item(id):
         TODO: Redirect to orginal URL after comment instead of parent_id like we do now
               (user can come from many places, like a post-item page or comment-item page)
     """
-    form = CommentForm(request.values, kind="comment")
     item = Item.query.get_or_404(id)
-    if request.method == 'POST' and form.validate_on_submit():
-        comment = Item(text = md.convert(form.text.data),
-                       kind = "comment",
-                       parent_id = item.id,
-                       parent = item,
-                       timestamp = datetime.utcnow(),
-                       user_id = current_user.id)
 
-        db.session.add(comment)
-        db.session.commit()
+    form = CommentForm(request.values, kind="comment")
+    if form.validate_on_submit():
+        next_url = request.headers.get('source_url', None)
+        comment = submit_item(text=form.text.data, parent_id=item.id)
 
         flash('Thanks for adding to the discussion!', category = 'success')
-        return redirect(url_for('item', id=item.id) + '#item-' + str(comment.id)) 
+
+        if next_url:
+            return redirect(next_url + '#item-' + str(comment.id))
+        else:
+            return redirect(request.url + '#item-' + str(comment.id))
     return render_template('item.html',
         item = item, form = form, title=item.title)
 
@@ -87,14 +102,11 @@ def submit():
             flash('URL already submitted', category = 'warning')
             return redirect(url_for('item', id=post.id))
 
-        post = Item(url = form.url.data,
-                    title = form.title.data,
-                    kind = 'post',
-                    text = md.convert(form.text.data),
-                    timestamp = datetime.utcnow(),
-                    user_id = current_user.id)
-        db.session.add(post)
-        db.session.commit()
+        post = submit_item(url = form.url.data,
+                    title = form.title.data, 
+                    text = form.text.data, 
+                    parent_id = item.id,
+                    kind = 'post')
 
         flash('Thanks for the submission!', category = 'success')
         return redirect(url_for('item', id=post.id)) 
@@ -116,21 +128,21 @@ def comment(id):
         return redirect(url_for('item', id=id))
 
     #Otherwise send html form over json
-    form = CommentForm(request.values, kind="comment")
     item = Item.query.get_or_404(id)
-    if form.validate_on_submit():
-        comment = Item(text = md.convert(form.text.data),
-                       kind = "comment",
-                       parent_id = item.id,
-                       parent = item,
-                       timestamp = datetime.utcnow(),
-                       user_id = current_user.id)
 
-        db.session.add(comment)
-        db.session.commit()
+
+    form = CommentForm(request.values, kind="comment")
+    if form.validate_on_submit():
+        next_url = request.headers.get('source_url', None)
+
+        comment = submit_item(text=form.text.data, parent_id=item.id)
 
         flash('Thanks for keeping the discussion alive!', category = 'success')
-        return redirect(url_for('item', id=item.id) + '#item-' + str(comment.id)) 
+
+        if next_url:
+            return redirect(next_url + '#item-' + str(comment.id))
+        else:
+            return redirect(url_for('item', id=id) + '#item-' + str(comment.id))
     return jsonify(html = render_template('_comment_form.html',
         item = item, form = form))
 
