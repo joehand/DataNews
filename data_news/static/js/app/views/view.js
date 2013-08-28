@@ -76,7 +76,7 @@ define(['backbone', 'jquery', 'model/model'], function(Backbone, $, VoteModel) {
 
             function setHeader(xhr) {
                 // We set this header so Flask knows we aren't human =)
-                xhr.setRequestHeader('returnJSON', 'True');
+                xhr.setRequestHeader('formJSON', 'True');
             }
         },
 
@@ -152,11 +152,12 @@ define(['backbone', 'jquery', 'model/model'], function(Backbone, $, VoteModel) {
                 $.pjax.submit(event, '#main');
             });
 
-            $(document).on('pjax:beforeSend', function(e, xhr) {
+            $(document).on('pjax:beforeSend', function(e, xhr, pj) {
                 xhr.setRequestHeader('source_url', document.URL);
+                console.log(document.URL);
             });
 
-            self.$el.on('pjax:end', function(e) {
+            self.$el.on('pjax:end', function(e, xhr, pj) {
                 self.itemViews = []; // Clear old Item views
                 self.initAllItems(); // Make new ones!
 
@@ -166,6 +167,10 @@ define(['backbone', 'jquery', 'model/model'], function(Backbone, $, VoteModel) {
                     $link_parent.addClass('active');
                 } else {
                     $('.pjax-active.active').removeClass('active');
+                }
+
+                if (pj.type == 'POST') {
+                    //self.highlightComment
                 }
             });
         },
@@ -196,6 +201,13 @@ define(['backbone', 'jquery', 'model/model'], function(Backbone, $, VoteModel) {
             });
 
             this.itemViews = itemViews;
+        }, 
+
+        highlightComment: function() {
+            // set url to right url
+            // add #id to url
+            // add class to highlight comment
+
         }
     });
 

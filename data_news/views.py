@@ -1,6 +1,8 @@
 from data_news import app, db
-from flask import render_template, request, flash, redirect, url_for, jsonify, session
+from flask import render_template, request, flash,\
+                 redirect, url_for, jsonify, session, make_response
 from flask.ext.security import login_required, current_user
+from urlparse import urlparse
 from datetime import datetime
 from markdown import Markdown
 from bleach import clean
@@ -27,6 +29,7 @@ def submit_item(url=None, title=None, text=None,
 
     return item
 
+
 @app.route('/')
 @app.route('/<int:page>')
 def index(page = 1):
@@ -42,29 +45,47 @@ def index(page = 1):
     return render_template('index.html',
         items = posts)
 
+
 @app.route('/item/<int:id>', methods = ['GET', 'POST'])
 def item(id):
     """ View for a singular item (post or comment)
         Form is used to comment on that post or comment
 
         Redirection is kinda weak right now. 
-        Its set via js when form is submitted (request headers)
+            Its better now but the comment form is not clearing.
+            Also pjax doesn't scroll to #item-id
     """
-    item = Item.query.get_or_404(id)
+    item_obj = Item.query.get_or_404(id)
 
     form = CommentForm(request.values, kind="comment")
+
+    if request.method == 'GET' and request.headers.get('formJSON', False):
+        #Get only the comment reply form and return via JSON
+        return jsonify(html = render_template('_comment_form.html',
+        item = item_obj, form = form))
+
     if form.validate_on_submit():
-        next_url = request.headers.get('source_url', None)
-        comment = submit_item(text=form.text.data, parent_id=item.id)
+        comment = submit_item(text=form.text.data, parent_id=item_obj.id)
 
         flash('Thanks for adding to the discussion!', category = 'success')
 
-        if next_url:
-            return redirect(next_url + '#item-' + str(comment.id))
-        else:
-            return redirect(request.url + '#item-' + str(comment.id))
+        next_url = request.headers.get('source_url', request.url)
+        path = urlparse(next_url)[2]
+        next_id = path[path.rfind('/') + 1:]
+        next_url = path + '#item-' + str(comment.id)
+
+        #Redefine the items to pass to template for PJAX
+        item_obj = Item.query.get_or_404(next_id)
+        form_new = CommentForm()
+
+        response = make_response(render_template('item.html',
+                                item = item_obj, form = form_new, title=item_obj.title))
+
+        response.headers['X-PJAX-URL'] = next_url
+        return response
+
     return render_template('item.html',
-        item = item, form = form, title=item.title)
+        item = item_obj, form = form, title=item_obj.title)
 
 
 @app.route('/items')
@@ -75,7 +96,7 @@ def items(page = 1):
 
         TODO: Change sort order via request args
     """
-    items = Item.query.order_by(Item.timestamp.desc()).paginate(page)
+    items_obj = Item.query.order_by(Item.timestamp.desc()).paginate(page)
     filters = {}
     if request.args:
         for key, val in request.args.iteritems():
@@ -84,8 +105,9 @@ def items(page = 1):
             filters['user_id'] = User.query.filter_by(name=request.args['name']).first().id
             filters.pop('name')
 
-        items = Item.query.order_by(Item.timestamp.desc()).filter_by(**filters).paginate(page)
-    return render_template('index.html', items=items, filters=filters)
+        items_obj = Item.query.order_by(Item.timestamp.desc()).filter_by(**filters).paginate(page)
+    return render_template('index.html', items=items_obj, filters=filters)
+
 
 @app.route('/submit', methods = ['GET', 'POST'])
 @login_required
@@ -112,44 +134,6 @@ def submit():
     return render_template('submit.html', form=form, title='Submit')
 
 
-@app.route('/comment/<int:id>', methods = ['GET', 'POST'])
-@login_required
-def comment(id):
-    """ Get/Submit an inline comment (vs the above item page comments)
-        GET returns json containing form HTML
-        This page is accessed via ajax when hitting 'reply' link on comment
-        No humans should come here. No big deal if they do, its just not exciting =).
-
-        Redirection is kinda weak right now. 
-        Its set via js when form is submitted (request headers)
-
-        TODO: Expand this to be used for any comment input or editing
-              Could also work with post editing?
-    """
-    # Intercept and Redirect human access to item/parent_id for commenting
-    if request.method == 'GET' and not request.headers.get('returnJSON', False):
-        return redirect(url_for('item', id=id))
-
-    #Otherwise send html form over json
-    item = Item.query.get_or_404(id)
-
-
-    form = CommentForm(request.values, kind="comment")
-    if form.validate_on_submit():
-        next_url = request.headers.get('source_url', None)
-
-        comment = submit_item(text=form.text.data, parent_id=item.id)
-
-        flash('Thanks for adding to the discussion!', category = 'success')
-
-        if next_url:
-            return redirect(next_url + '#item-' + str(comment.id))
-        else:
-            return redirect(url_for('item', id=id) + '#item-' + str(comment.id))
-    return jsonify(html = render_template('_comment_form.html',
-        item = item, form = form))
-
-
 @app.route('/vote/<int:id>', methods = ['POST'])
 @login_required
 def vote(id):
@@ -171,7 +155,7 @@ def vote(id):
 
 @app.route('/user/<name>', methods = ['GET', 'POST'])
 def user(name):
-    """ Get the beautiful use page
+    """ Get the beautiful user page
         Also a user can edit their own info here
         TODO: Handle upper/lower case in names better
         TODO: Add about section? And gravatar option?

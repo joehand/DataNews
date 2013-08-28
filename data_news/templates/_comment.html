@@ -20,7 +20,7 @@
     <div class="row comment-text">
         {{comment.text|safe|urlize}}  
         {% if current_user.id %} 
-        <small class="reply text-muted"><a href="{{url_for('comment', id=comment.id)}}">reply</a></small>
+        <small class="reply text-muted"><a href="{{url_for('item', id=comment.id)}}">reply</a></small>
         {% endif %}
     </div>
 </div>
