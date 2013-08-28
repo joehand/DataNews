@@ -149,12 +149,11 @@ define(['backbone', 'jquery', 'model/model'], function(Backbone, $, VoteModel) {
 
             //Init the pjax for forms
             $(document).on('submit', 'form[data-pjax]', function(event) {
-                $.pjax.submit(event, '#main');
+                $.pjax.submit(event, '#main', {'scrollTo':false});
             });
 
             $(document).on('pjax:beforeSend', function(e, xhr, pj) {
                 xhr.setRequestHeader('source_url', document.URL);
-                console.log(document.URL);
             });
 
             self.$el.on('pjax:end', function(e, xhr, pj) {
@@ -170,7 +169,7 @@ define(['backbone', 'jquery', 'model/model'], function(Backbone, $, VoteModel) {
                 }
 
                 if (pj.type == 'POST') {
-                    //self.highlightComment
+                    self.highlightComment()
                 }
             });
         },
@@ -204,10 +203,12 @@ define(['backbone', 'jquery', 'model/model'], function(Backbone, $, VoteModel) {
         }, 
 
         highlightComment: function() {
-            // set url to right url
-            // add #id to url
-            // add class to highlight comment
-
+            var itemId = window.location.hash;
+            //add class to highlight
+            $(itemId).addClass('highlight');
+            setTimeout(function() {
+                $(itemId).removeClass('highlight');
+            }, 2000);
         }
     });
 

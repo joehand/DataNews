@@ -38,6 +38,7 @@
 
 .comment {
     margin-bottom:15px;
+    transition: all 0.5s ease-in; 
 }
 
 .comment-info {
@@ -54,6 +55,11 @@
 
 .comment-text {
     padding-left:15px;
+}
+
+.comment.highlight {
+    background-color:rgba(122,98,211,0.4);
+    border-radius:5px;
 }
 
 

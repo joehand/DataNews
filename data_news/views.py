@@ -76,10 +76,11 @@ def item(id):
 
         #Redefine the items to pass to template for PJAX
         item_obj = Item.query.get_or_404(next_id)
-        form_new = CommentForm()
+        form = CommentForm()
+        form.text.data = '' #form data isn't clearing, so do it manually
 
         response = make_response(render_template('item.html',
-                                item = item_obj, form = form_new, title=item_obj.title))
+                                item = item_obj, form = form, title=item_obj.title))
 
         response.headers['X-PJAX-URL'] = next_url
         return response
