@@ -15,11 +15,14 @@
         {% else %}
         <a href="{{url_for('item', id=comment.id)}}" data-pjax>{{pretty_date(comment.timestamp)}}</a>
         {% endif %}
+        {% if current_user.id and comment.user_id == current_user.id and not edit %}
+            | <a href="{{url_for('item', id=comment.id, edit=True)}}" data-pjax>Edit</a>
+        {% endif %}
     </div>
 
     <div class="row comment-text">
         {{comment.text|safe|urlize}}  
-        {% if current_user.id %} 
+        {% if current_user.id and not edit%} 
         <small class="reply text-muted"><a href="{{url_for('item', id=comment.id)}}">reply</a></small>
         {% endif %}
     </div>

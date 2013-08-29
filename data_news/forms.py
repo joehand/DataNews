@@ -26,6 +26,7 @@ class CommentForm(Form):
     text = TextAreaField('',validators=[required()])
     kind = HiddenField('')
     parent_id = HiddenField('')
+    edit = HiddenField('')
 
 class UserForm(Form):
     """ Form to edit the user

@@ -204,11 +204,15 @@ define(['backbone', 'jquery', 'model/model'], function(Backbone, $, VoteModel) {
 
         highlightComment: function() {
             var itemId = window.location.hash;
-            //add class to highlight
-            $(itemId).addClass('highlight');
-            setTimeout(function() {
-                $(itemId).removeClass('highlight');
-            }, 2000);
+            //scroll to our item
+            if (itemId != ''){
+                $("html, body").animate({ scrollTop: $(itemId).offset().top }, 1000);
+                //add class to highlight
+                $(itemId).addClass('highlight');
+                setTimeout(function() {
+                    $(itemId).removeClass('highlight');
+                }, 4000);
+            }
         }
     });
 

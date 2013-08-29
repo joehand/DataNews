@@ -25,6 +25,7 @@
             {% set item_page = False %}
             </div>
 
+            {% if not edit %}
             {%- for comment in item.get_children() -%}
               {% set depth = comment[1] - 1 %}
               {% set comment = comment[0] %}
@@ -32,4 +33,5 @@
               {% include "_comment.html" %}
             </div>
             {%- endfor %}
+            {% endif %}
 {% endblock -%}

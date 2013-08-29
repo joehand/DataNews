@@ -5,17 +5,17 @@ from flask.ext.security import login_required, current_user
 from urlparse import urlparse
 from datetime import datetime
 from markdown import Markdown
+from markdownify import markdownify
 from bleach import clean
 from models import Item, User, Vote
 from forms import PostForm, CommentForm, UserForm
 
-
+md = Markdown()
+allowed_tags = ['p','em','strong','code','pre','blockquote','ul','li','ol']
 def submit_item(url=None, title=None, text=None, 
                     kind='comment', parent_id=None):
     """ Submits an item (post or comment) to db
     """      
-    md = Markdown()
-    allowed_tags = ['p','em','strong','code','pre','blockquote','ul','li','ol']
     item = Item(url = url,
                 title = title,
                 text = clean(md.convert(text), allowed_tags),
@@ -56,16 +56,36 @@ def item(id):
             Also pjax doesn't scroll to #item-id
     """
     item_obj = Item.query.get_or_404(id)
+    commentForm = CommentForm(request.values, kind="comment")
 
-    form = CommentForm(request.values, kind="comment")
+    if request.args.get('edit', False) and item_obj.kind == 'comment'\
+         and current_user.id == item_obj.user_id:
+        print 'editing'
+        commentForm.text.data = markdownify(item_obj.text)
+        commentForm.edit.data = True
+
+        return render_template('item.html',
+                item = item_obj, form = commentForm, title=item_obj.title, edit=True)
 
     if request.method == 'GET' and request.headers.get('formJSON', False):
         #Get only the comment reply form and return via JSON
         return jsonify(html = render_template('_comment_form.html',
-        item = item_obj, form = form))
+        item = item_obj, form = commentForm))
 
-    if form.validate_on_submit():
-        comment = submit_item(text=form.text.data, parent_id=item_obj.id)
+    if commentForm.validate_on_submit():
+
+        if commentForm.edit.data:
+            item_obj.text = clean(md.convert(commentForm.text.data), allowed_tags)
+            db.session.commit()
+
+            flash('Edit saved', 'info')
+            response = make_response(render_template('item.html',
+                        item = item_obj, form = commentForm, title=item_obj.title, edit=True))
+
+            response.headers['X-PJAX-URL'] = url_for('item', id=item_obj.id, edit=True)
+            return response
+        
+        comment = submit_item(text=commentForm.text.data, parent_id=item_obj.id)
 
         flash('Thanks for adding to the discussion!', category = 'success')
 
@@ -76,17 +96,17 @@ def item(id):
 
         #Redefine the items to pass to template for PJAX
         item_obj = Item.query.get_or_404(next_id)
-        form = CommentForm()
-        form.text.data = '' #form data isn't clearing, so do it manually
+        commentForm = CommentForm()
+        commentForm.text.data = '' #form data isn't clearing, so do it manually
 
         response = make_response(render_template('item.html',
-                                item = item_obj, form = form, title=item_obj.title))
+                                item = item_obj, form = commentForm, title=item_obj.title))
 
         response.headers['X-PJAX-URL'] = next_url
         return response
 
     return render_template('item.html',
-        item = item_obj, form = form, title=item_obj.title)
+        item = item_obj, form = commentForm, title=item_obj.title)
 
 
 @app.route('/items')
