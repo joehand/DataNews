@@ -3,13 +3,15 @@
 {% block title %}Home {% endblock title %}
 
 {% block content %}
-            <div class="row">
+            <div class="row post-list">
             {% for item in items.items %}
+                <div class="col-lg-offset-1 col-lg-8 col-md-9 col-sm-offset-1 col-sm-11 col-xs-12">
                 {% if item.kind == 'post' %}
                     {% include "_post.html" %}
                 {% elif item.kind == 'comment' %}
                     {% include "_comment.html" %}
                 {% endif %}
+                </div>
             {% endfor %}
             </div>
 

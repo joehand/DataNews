@@ -3,31 +3,35 @@
 
 {%- block content %}
             <div class="row">
+              <div class="col-lg-offset-1 col-lg-8 col-md-9 col-md-offset-1 col-sm-offset-1 col-sm-11 col-xs-12">
             {% set item_page = True %}
             {% if item.kind == 'post' %}
               {% include "_post.html" %}
             {% elif item.kind == 'comment' %}
               {% include "_comment.html" %}
             {% endif %}
+              </div>
             </div>
 
 
             <div class="row">
-            {% if current_user.id %}
-              {% include "_comment_form.html" %}
-            {% else %}
-            <div class="panel panel-default col-lg-12 col-md-12">
-              <div class="panel-body">
-              <p><a class="alert-link" href="{{url_for("security.login")}}">Login</a> or <a class="alert-link" href="{{url_for("security.register")}}">register</a> to comment.</p>
+              <div class="col-lg-offset-1 col-lg-8 col-md-9 col-md-offset-1 col-sm-offset-1 col-sm-11 col-xs-12">
+              {% if current_user.id %}
+                {% include "_comment_form.html" %}
+              {% else %}
+              <div class="panel panel-default">
+                <div class="panel-body">
+                <p><a class="alert-link" href="{{url_for("security.login")}}">Login</a> or <a class="alert-link" href="{{url_for("security.register")}}">register</a> to comment.</p>
+                </div>
               </div>
-            </div>
-            {% endif %}
+              {% endif %}
+              </div>
             {% set item_page = False %}
             </div>
 
             {% if not edit %}
             {%- for comment in item.get_children() -%}
-              {% set depth = comment[1] - 1 %}
+              {% set depth = comment[1] %}
               {% set comment = comment[0] %}
             <div class="row">
               {% include "_comment.html" %}

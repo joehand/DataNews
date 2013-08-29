@@ -1,8 +1,8 @@
-<div class="item post col-lg-12 col-md-12" id="item-{{item.id}}" data-id="{{item.id}}" data-user="{{item.user.id}}">
+<div class="item post" id="item-{{item.id}}" data-id="{{item.id}}" data-user="{{item.user.id}}">
     <div class="row post-title">
         <h4>
             {% include "_vote.html" %}
-            <span class="vote-count label label-default"><b>{{item.votes|length}}</b></span>
+            <!--<span class="vote-count"><b>{{item.votes|length}}</b></span>-->
             <a href="{{item.url}}" data-pjax>{{item.title|safe}}</a> 
             <small class="text-muted">({{get_domain(item.url)}})</small>
         </h4>

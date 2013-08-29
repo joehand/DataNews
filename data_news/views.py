@@ -126,6 +126,9 @@ def items(page = 1):
             filters['user_id'] = User.query.filter_by(name=request.args['name']).first().id
             filters.pop('name')
 
+        if '_pjax' in filters:
+            filters.pop('_pjax')
+
         items_obj = Item.query.order_by(Item.timestamp.desc()).filter_by(**filters).paginate(page)
     return render_template('index.html', items=items_obj, filters=filters)
 

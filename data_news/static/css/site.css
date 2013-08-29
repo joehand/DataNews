@@ -12,6 +12,10 @@
     margin-bottom:10px;
 }
 
+.navbar-toggle .icon-bar  {
+    background-color:#7a62d3;
+}
+
 .post {
 }
 
@@ -22,7 +26,7 @@
 
 .post-title .up-vote {
     position: absolute;
-    left:-15px;
+    left:-10px;
 }
 
 
@@ -68,6 +72,10 @@
     color:#7a62d3;
 }
 
+.next {
+    padding-left:30px;
+}
+
 /* Comment Form and Input */
 .comment-form{
     margin:10px 0 30px;
@@ -109,5 +117,24 @@ textarea.comment-input:active,
 
 .user-buttons .btn{
     width:140px;
-    margin-bottom:15px;
+    margin-bottom:25px;
+}
+
+@media (max-width: 768px) { 
+    .navbar-nav>li.active a {
+        border-bottom:0px;
+        padding-bottom:10px;
+        border-left:2px solid #7a62d3;
+    } 
+
+    #main {
+        padding-left:20px;
+        padding-right:20px;
+    }   
+}
+
+@media (min-width: 750px) and (max-width:970px) {
+    .pad-form {
+        padding-top:25px;
+    }
 }

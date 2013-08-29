@@ -1,6 +1,6 @@
 {% with messages = get_flashed_messages(with_categories=true) %}
   {% if messages %}
-  <div class="row flashes"> 
+  <div class="row flashes col-lg-offset-1 col-lg-8 col-md-9 col-md-offset-1 col-sm-offset-1 col-sm-11 col-xs-12"> 
     {% for category, message in messages %}
       <div class="alert alert-{{ category }}">
         <button type="button" class="close" data-dismiss="alert">&times;</button>

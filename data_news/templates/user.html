@@ -16,8 +16,8 @@
               <div class="panel-body">
                 {% if form %}
                 <form class="form form-inline row" method="post" action="{{request.url}}">
-                  <div class="col-md-12 col-lg-12">
-                    <div class="col-md-10 col-lg-10">
+                  <div class="col-md-12 col-lg-12 col-sm-12">
+                    <div class="col-md-10 col-lg-10 col-sm-8">
                     {{ form.hidden_tag() }}
                     {{ wtf.form_errors(form, "only") }}
 
@@ -33,7 +33,7 @@
                       {{ wtf.inline_wtf(form.twitter, placeholder='Twitter Username', input_addon='@') }}
                     {% endif %}
                     </div>
-                    <div class="form-actions col-md-2 col-lg-2 user-buttons">
+                    <div class="form-actions col-md-2 col-lg-2 col-sm-4 user-buttons">
                        <button name="action_save" type="submit" class="btn btn-primary">Submit Changes</button>
                        <a class="btn btn-default" href="{{ url_for_security('change_password') }}" data-pjax>Change Password</a>
                     </div>
