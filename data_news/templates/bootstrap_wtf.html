@@ -65,12 +65,9 @@
 {% macro form_errors(form, hiddens=True) %}
 {%- if form.errors %}
 {%- for fieldname, errors in form.errors.iteritems() %}
-{%- if (form[fieldname]|bootstrap_is_hidden_field and hiddens) or
-       (form[fieldname]|bootstrap_is_hidden_field and hiddens != 'only') %}
 {%- for error in errors %}
 <p class="error">{{error}}</p>
 {%- endfor %}
-{%- endif %}
 {%- endfor %}
 {%- endif %}
 {%- endmacro %}
@@ -80,9 +77,7 @@
   {{ form.hidden_tag() }}
   {{ form_errors(form, 'only') }}
   {%- for field in form %}
-  {% if not field|bootstrap_is_hidden_field %}
   {{ horizontal_field(field) }}
-  {%- endif %}
   {%- endfor %}
   <div class="form-group">
     <div class="col-offset-2 col-lg-10 col-md-10">

@@ -28,6 +28,9 @@ class CommentForm(Form):
     parent_id = HiddenField('')
     edit = HiddenField('')
 
+class SearchForm(Form):
+    search = TextField('search', validators = [required()])
+
 class UserForm(Form):
     """ Form to edit the user
     """

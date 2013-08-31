@@ -60,3 +60,4 @@ venv
 db_repository
 app.db
 .webassets-cache
+search.db

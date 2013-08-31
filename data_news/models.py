@@ -2,6 +2,7 @@ from data_news import app, db
 from flask.ext.security import UserMixin, RoleMixin
 from flask.ext.sqlalchemy import Pagination
 from sqlalchemy import func, case
+import flask.ext.whooshalchemy as whooshalchemy
 from datetime import datetime
 from math import log
 
@@ -11,6 +12,24 @@ def epoch_seconds(date):
     """Returns the number of seconds from the epoch to date."""
     td = date - epoch
     return td.days * 86400 + td.seconds + (float(td.microseconds) / 1000000)
+
+def paginate(query, page, per_page=20, error_out=True):
+    if error_out and page < 1:
+        abort(404)
+    items = query.limit(per_page).offset((page - 1) * per_page).all()
+    if not items and page != 1 and error_out:
+        abort(404)
+
+    # No need to count if we're on the first page and there are fewer
+    # items than we expected.
+    if page == 1 and len(items) < per_page:
+        total = len(items)
+    else:
+        total = query.order_by(None).count()
+
+    return Pagination(query, page, per_page, total, items)
+
+
 
 # Define models
 roles_users = db.Table('roles_users',
@@ -113,6 +132,8 @@ class Item(db.Model):
                You have to do recursion on each parent. Should I make this a column?
                parent currently refers to just the immediate parent (post or comment)
     """
+    __searchable__ = ['title', 'url', 'text']
+
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String(140))
     url = db.Column(db.String(), unique=True)
@@ -189,6 +210,12 @@ class Item(db.Model):
                                    key=lambda x: x.post_score, 
                                    reverse=True)[start:end]
         return items_paged
+
+    @classmethod
+    def paged_search(cls, query, page=1):
+        return paginate(cls.query.whoosh_search(query), page)
+
+whooshalchemy.whoosh_index(app, Item)
 
 class Twitter(db.Model):
     """ Keep track of a few max id's for fetching via Twitter ID.

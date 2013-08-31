@@ -12,6 +12,8 @@ SECURITY_RECOVERABLE = True
 SECURITY_DEFAULT_REMEMBER_ME = True
 SECURITY_SEND_REGISTER_EMAIL = False
 
+WHOOSH_BASE = os.path.join(basedir, 'search.db')
+
 #Mail config
 MAIL_SERVER = 'smtp.example.com'
 MAIL_PORT = 465

@@ -1,6 +1,6 @@
 from data_news import app, db
 from flask import render_template, request, flash,\
-                 redirect, url_for, jsonify, session, make_response
+                 redirect, url_for, jsonify, session, make_response, g
 from flask.ext.security import login_required, current_user
 from urlparse import urlparse
 from datetime import datetime
@@ -8,7 +8,7 @@ from markdown import Markdown
 from markdownify import markdownify
 from bleach import clean
 from models import Item, User, Vote
-from forms import PostForm, CommentForm, UserForm
+from forms import PostForm, CommentForm, UserForm, SearchForm
 
 md = Markdown()
 allowed_tags = ['p','em','strong','code','pre','blockquote','ul','li','ol']
@@ -28,6 +28,14 @@ def submit_item(url=None, title=None, text=None,
     db.session.commit()
 
     return item
+
+@app.before_request
+def before_request():
+    g.user = current_user
+    if g.user.is_authenticated():
+        g.user.last_login_at = datetime.utcnow()
+        db.session.commit()
+    g.search_form = SearchForm()
 
 
 @app.route('/')
@@ -117,7 +125,6 @@ def items(page = 1):
 
         TODO: Change sort order via request args
     """
-    items_obj = Item.query.order_by(Item.timestamp.desc()).paginate(page)
     filters = {}
     if request.args:
         for key, val in request.args.iteritems():
@@ -130,8 +137,24 @@ def items(page = 1):
             filters.pop('_pjax')
 
         items_obj = Item.query.order_by(Item.timestamp.desc()).filter_by(**filters).paginate(page)
+    else:
+        items_obj = Item.query.order_by(Item.timestamp.desc()).paginate(page)
     return render_template('index.html', items=items_obj, filters=filters)
 
+@app.route('/search', methods = ['GET', 'POST'])
+@app.route('/search/<query>')
+@app.route('/search/<query>/<int:page>')
+def search(query=None, page=1):
+    if g.search_form.validate_on_submit():
+        return redirect(url_for('search', query=g.search_form.search.data))
+    if request.args.get('query', None):
+        query = request.args.get('query')
+
+    results = Item.paged_search(query, page)
+    print results
+    return render_template('index.html',
+        query = query,
+        items = results)
 
 @app.route('/submit', methods = ['GET', 'POST'])
 @login_required

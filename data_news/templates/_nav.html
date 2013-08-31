@@ -6,8 +6,10 @@
 {% endmacro %}
 
 
-  <header class="navbar navbar-static-top bs-docs-nav" role="banner">
+  <header class="navbar navbar-static-top" role="banner">
   <div class="container">
+    <div class="row search-form collapse">
+    </div>
     <div class="navbar-header">
       <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".bs-navbar-collapse">
         <span class="sr-only">Toggle navigation</span>
@@ -31,6 +33,7 @@
               <li class=""><a href="{{url_for('security.logout')}}">Logout</a></li>
             {% else %}
               <li class=""><a href="{{url_for('security.login')}}">Login</a></li>
+              <li class=""><a href="{{url_for('security.register')}}">Register</a></li>
             {% endif %}
             {% if current_user.is_admin %}
               <li class=""><a href="/admin/">Admin</a></li>

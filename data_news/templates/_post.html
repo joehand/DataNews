@@ -8,7 +8,7 @@
         </h4>
     </div>
     <div class="row post-info">
-        <p>From <a href="{{url_for('user', name=item.user.name)}}" data-pjax>{{item.user.name}}</a>
+        <p><span class="vote-count"><b>{{item.votes|length}}</b></span> | From <a href="{{url_for('user', name=item.user.name)}}" data-pjax>{{item.user.name}}</a>
         <span>{{pretty_date(item.timestamp)}}</span> | 
         <span><a href="{{url_for('item', id=item.id)}}" data-pjax>{{item.get_children()|length}} comments</a></span></p>
     </div>
