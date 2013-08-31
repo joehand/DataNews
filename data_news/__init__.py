@@ -8,7 +8,7 @@ from flask.ext.assets import Environment
 from datetime import datetime
 from template_utils import get_domain, pretty_date
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='')
 
 if os.environ.get('HEROKU_PROD', False):
     app.config.from_object('config.ProductionConfig')
