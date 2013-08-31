@@ -43,14 +43,11 @@
 {% if "X-PJAX" not in request.headers %}
     </div> <!-- #main -->
 
-    {% block footer %}
-      <footer class="row">
+    {%- block footer %}
       <hr>
-      {% include "_search.html" %}
-      <p class="col-md-3">&copy; Hand 2013</p>
-      </footer>
+      <!--{% include "_search.html" %}-->
+      {% include "_footer.html" %}
     {% endblock footer %}
-
     </div> <!-- /container -->
   {%- block js %}
     {% include "_js.html" %}

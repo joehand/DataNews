@@ -1,0 +1,50 @@
+{% extends "_base.html" %}
+
+{% block title %}Home {% endblock title %}
+
+{% block content %}
+            {% if query %}
+            searching for: {{query}}
+            {% endif %}
+            {% if current_user.is_anonymous() and not session.return_anon %}
+            <div class="row welcome-msg">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3>Welcome to DataNews!</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p><strong>DataNews.co</strong> is a place to discuss the latest news in data visualization <i class="icon-bar-chart"></i>, open data resources <i class="icon-hdd"></i>, general quantified knowledge <i class="icon-dashboard"></i>, and other fun things... <i class="icon-coffee"></i> <i class="icon-beer"></i> <i class="icon-rocket"></i></p>
+                        <p><a href="url_for('security.register')" class="btn btn-sm btn-primary" data-pjax>Register Now</a></p>
+                    <div class="panel-footer">
+                        <p><small><i>Don't worry, you won't see this message again &mdash; at least for 30 days.</i></small></p>
+                    </div>
+                </div>
+                    
+                    <p></p>
+                  </div>
+            </div>
+            {% endif %}
+            <div class="row post-list">
+            {% for item in items.items %}
+                <div class="col-lg-offset-1 col-lg-11 col-md-12 col-sm-offset-1 col-sm-11 col-xs-12">
+                {% if item.kind == 'post' %}
+                    {% include "_post.html" %}
+                {% elif item.kind == 'comment' %}
+                    {% include "_comment.html" %}
+                {% endif %}
+                </div>
+            {% endfor %}
+            </div>
+
+            {% if items.has_next %}
+            <div class="row next">
+                <div class="col-lg-offset-1 col-md-offset-1  col-sm-offset-1">
+                {% if "/items" in request.path  %}
+                <a href="{{ url_for('items', page = items.next_num, **filters) }}" data-pjax>More</a>
+                {% else %}
+                <a href="{{ url_for('index', page = items.next_num) }}" data-pjax>More</a>
+                {% endif %}
+            </div>
+            </div>
+            {% endif %}
+{% endblock %}

@@ -10,6 +10,7 @@ from bleach import clean
 from models import Item, User, Vote
 from forms import PostForm, CommentForm, UserForm, SearchForm
 
+
 md = Markdown()
 allowed_tags = ['p','em','strong','code','pre','blockquote','ul','li','ol']
 def submit_item(url=None, title=None, text=None, 
@@ -31,12 +32,16 @@ def submit_item(url=None, title=None, text=None,
 
 @app.before_request
 def before_request():
+    session.permanent = True
     g.user = current_user
     if g.user.is_authenticated():
         g.user.last_login_at = datetime.utcnow()
         db.session.commit()
+    elif request.endpoint == 'index':
+        session['visited_index'] = True
+    elif session.get('visited_index', False):
+        session['return_anon'] = True
     g.search_form = SearchForm()
-
 
 @app.route('/')
 @app.route('/<int:page>')
@@ -46,11 +51,8 @@ def index(page = 1):
 
         TODO: More awesomeness!
     """
-
     posts = Item.ranked_posts(page)
-    if current_user.is_anonymous() and page==1:
-        flash('Welcome! <a class="alert-link" href="%s" data-pjax>Register here</a> to start contributing or just browse.' % url_for("security.register"))
-    return render_template('index.html',
+    return render_template('list.html',
         items = posts)
 
 
@@ -139,7 +141,7 @@ def items(page = 1):
         items_obj = Item.query.order_by(Item.timestamp.desc()).filter_by(**filters).paginate(page)
     else:
         items_obj = Item.query.order_by(Item.timestamp.desc()).paginate(page)
-    return render_template('index.html', items=items_obj, filters=filters)
+    return render_template('list.html', items=items_obj, filters=filters)
 
 @app.route('/search', methods = ['GET', 'POST'])
 @app.route('/search/<query>')
@@ -152,7 +154,7 @@ def search(query=None, page=1):
 
     results = Item.paged_search(query, page)
     print results
-    return render_template('index.html',
+    return render_template('list.html',
         query = query,
         items = results)
 
@@ -202,3 +204,8 @@ def user(name):
             return redirect(url_for('user', name=form.name.data)) 
         return render_template('user.html', user=user, form=form, title=user.name)
     return render_template('user.html', user=user, title=user.name)
+
+@app.route('/about')
+def about():
+    return render_template('about.html')
+

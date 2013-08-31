@@ -38,7 +38,6 @@ def user_registered_sighandler(app, user, confirm_token):
 mail = Mail(app)
 assets = Environment(app)
 
-
 # Set tempalate globals
 app.jinja_env.globals['get_domain'] = get_domain
 app.jinja_env.globals['pretty_date'] = pretty_date
