@@ -3,7 +3,7 @@ Flask==0.10.1
 Flask-Admin==1.0.6
 Flask-Assets==0.8
 Flask-DebugToolbar==0.8.0
-Flask-Login==0.2.6
+Flask-Login==0.2.7
 Flask-Mail==0.9.0
 Flask-Principal==0.4.0
 Flask-Restless==0.12.0
@@ -18,7 +18,7 @@ MarkupSafe==0.18
 SQLAlchemy==0.7.2
 Tempita==0.5.1
 WTForms==1.0.4
-Werkzeug==0.9.3
+Werkzeug==0.9.4
 Whoosh==2.5.2
 ago==0.0.5
 beautifulsoup4==4.3.1
