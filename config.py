@@ -22,7 +22,17 @@ class Config(object):
 
     WHOOSH_BASE = os.path.join(basedir, 'search.db')
 
+    DEBUG_TB_PANELS = (
+        'flask.ext.debugtoolbar.panels.versions.VersionDebugPanel',
+        'flask.ext.debugtoolbar.panels.timer.TimerDebugPanel',
+        'flask.ext.debugtoolbar.panels.headers.HeaderDebugPanel',
+        'flask.ext.debugtoolbar.panels.request_vars.RequestVarsDebugPanel',
+        'flask.ext.debugtoolbar.panels.template.TemplateDebugPanel',
+        'flask.ext.debugtoolbar.panels.logger.LoggingPanel'
+    )
+
 class ProductionConfig(Config):
+    DEBUG = True
     SECRET_KEY = os.environ.get('SECRET_KEY')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
@@ -36,17 +46,7 @@ class ProductionConfig(Config):
 class DevelopmentConfig(Config):
     DEBUG = True
 
-    DEBUG_TB_PANELS = (
-        'flask.ext.debugtoolbar.panels.versions.VersionDebugPanel',
-        'flask.ext.debugtoolbar.panels.timer.TimerDebugPanel',
-        'flask.ext.debugtoolbar.panels.headers.HeaderDebugPanel',
-        'flask.ext.debugtoolbar.panels.request_vars.RequestVarsDebugPanel',
-        'flask.ext.debugtoolbar.panels.template.TemplateDebugPanel',
-        'flask.ext.debugtoolbar.panels.logger.LoggingPanel'
-    )
-
     DEBUG_TB_INTERCEPT_REDIRECTS = False
-
 
 class TestingConfig(Config):
     TESTING = True
