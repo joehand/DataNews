@@ -181,25 +181,6 @@ def submit():
     return render_template('submit.html', form=form, title='Submit')
 
 
-@app.route('/vote/<int:id>', methods = ['POST'])
-@login_required
-def vote(id):
-    """ Vote for something. Woot. Page is actually not used...
-        Should I send AJAX vote here or use the API like I am right now?
-    """
-    if request.method == 'POST':
-        
-        vote = Vote(user_from_id = current_user.id,
-                    user_to_id = Item.query.get(id).user_id,
-                    item_id = id,
-                    timestamp = datetime.utcnow())
-
-        db.session.add(vote)
-        db.session.commit()
-        flash('Thanks for the vote!', category = 'info')
-        return redirect(url_for('item', id=id)) 
-    return redirect(url_for('index'))
-
 @app.route('/user/<name>', methods = ['GET', 'POST'])
 def user(name):
     """ Get the beautiful user page
