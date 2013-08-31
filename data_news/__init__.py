@@ -1,3 +1,4 @@
+import os
 from flask import Flask
 from flask.ext.sqlalchemy import SQLAlchemy
 from flask.ext.security.signals import user_registered
@@ -9,9 +10,10 @@ from template_utils import get_domain, pretty_date
 
 app = Flask(__name__)
 
-app.config.from_object('config')
-app.debug = True
-app.secret_key = 'A0Zr98j/3yX R~XHH!jmN]LWX/,?RT'
+if os.environ.get('HEROKU_PROD', False):
+    app.config.from_object('config.ProductionConfig')
+else:
+    app.config.from_object('config.DevelopmentConfig')
 
 # Create database connection object
 db = SQLAlchemy(app)

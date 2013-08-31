@@ -35,7 +35,7 @@ def before_request():
     session.permanent = True
     g.user = current_user
     if g.user.is_authenticated():
-        g.user.last_login_at = datetime.utcnow()
+        g.user.current_login_at = datetime.utcnow()
         db.session.commit()
     elif request.endpoint == 'index':
         session['visited_index'] = True
