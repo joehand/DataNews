@@ -1,0 +1,3 @@
+DataNews: You recently requested a password reset. Click the link below to reset your password:
+
+{{ reset_link }}
