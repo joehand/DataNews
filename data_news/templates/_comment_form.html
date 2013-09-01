@@ -1,7 +1,6 @@
 {% import "bootstrap_wtf.html" as wtf %}
 <form class="form form-horizontal comment-form {% if not item_page or edit %}comment-inline{% endif %}"method="post" action="{{url_for('item', id=item.id)}}" data-pjax>
   {{ form.hidden_tag() }}
-  {{ wtf.form_errors(form, "only") }}
   
   {% if not item_page %}
   {{ wtf.comment_field(form.text, autofocus=autofocus) }}
