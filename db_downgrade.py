@@ -1,5 +1,6 @@
 
 from migrate.versioning import api
+import os
 
 if os.environ.get('HEROKU_PROD', False):
     from config import ProductionConfig
