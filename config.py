@@ -20,17 +20,6 @@ class Config(object):
     SECURITY_EMAIL_SUBJECT_PASSWORD_NOTICE = 'DataNews: your password has been reset'
     SECURITY_EMAIL_SUBJECT_PASSWORD_CHANGE_NOTICE =  'DataNews: your password changed'
 
-    WHOOSH_BASE = os.path.join(basedir, 'search.db')
-
-    DEBUG_TB_PANELS = (
-        'flask.ext.debugtoolbar.panels.versions.VersionDebugPanel',
-        'flask.ext.debugtoolbar.panels.timer.TimerDebugPanel',
-        'flask.ext.debugtoolbar.panels.headers.HeaderDebugPanel',
-        'flask.ext.debugtoolbar.panels.request_vars.RequestVarsDebugPanel',
-        'flask.ext.debugtoolbar.panels.template.TemplateDebugPanel',
-        'flask.ext.debugtoolbar.panels.logger.LoggingPanel'
-    )
-
 class ProductionConfig(Config):
     DEBUG = False
     SECRET_KEY = os.environ.get('SECRET_KEY')
@@ -49,7 +38,19 @@ class ProductionConfig(Config):
 class DevelopmentConfig(Config):
     DEBUG = True
 
+    WHOOSH_BASE = os.path.join(basedir, 'search.db')
+    
     DEBUG_TB_INTERCEPT_REDIRECTS = False
+
+    DEBUG_TB_PANELS = (
+        'flask.ext.debugtoolbar.panels.versions.VersionDebugPanel',
+        'flask.ext.debugtoolbar.panels.timer.TimerDebugPanel',
+        'flask.ext.debugtoolbar.panels.headers.HeaderDebugPanel',
+        'flask.ext.debugtoolbar.panels.request_vars.RequestVarsDebugPanel',
+        'flask.ext.debugtoolbar.panels.template.TemplateDebugPanel',
+        'flask.ext.debugtoolbar.panels.logger.LoggingPanel'
+    )
+
 
 class TestingConfig(Config):
     TESTING = True
