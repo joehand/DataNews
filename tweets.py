@@ -9,7 +9,7 @@ from datetime import datetime
 
 
 class TweetGetter():
-    TWITTER_USER = User.query.filter_by(name='DataNews')
+    TWITTER_USER = User.query.filter_by(name='DataNews').first()
     api =  Twython('51ghURR9oSl4eRlbiEkA', 
                   'YyEnU1fUOzatFKTABN3rYQBjM6jWAi5p2AfTXg7XBZY',
                   '285652996-KCBSoeyXCkEo9GDku7A6u08FDA2TjSPelKvjOqdt', 
