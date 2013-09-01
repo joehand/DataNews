@@ -18,25 +18,25 @@ class TweetGetter():
     def __init__(self):
         twitter = Twitter.query.limit(1).first()
         if twitter is None:
-            twitter = Twitter(max_mention_id=0,max_fav_id=0)
+            twitter = Twitter(mention_id=0,fav_id=0)
             db.session.add(twitter)
             db.session.commit()
         self.twitter = twitter;
-        self.max_mention_id = twitter.max_mention_id
-        self.max_fav_id = twitter.max_fav_id
+        self.mention_id = twitter.mention_id
+        self.fav_id = twitter.fav_id
 
-    def check_max_mention_id(self, tweetid):
-        if self.max_mention_id < tweetid:
+    def check_mention_id(self, tweetid):
+        if self.mention_id < tweetid:
             print 'updating max mention id \n'
-            self.max_mention_id = tweetid
-            self.twitter.max_mention_id = tweetid
+            self.mention_id = tweetid
+            self.twitter.mention_id = tweetid
             db.session.commit()
 
-    def check_max_fav_id(self, tweetid):
-        if self.max_fav_id < tweetid:
+    def check_fav_id(self, tweetid):
+        if self.fav_id < tweetid:
             print 'updating max fav id \n'
-            self.max_fav_id = tweetid
-            self.twitter.max_fav_id = tweetid
+            self.fav_id = tweetid
+            self.twitter.fav_id = tweetid
             db.session.commit()
 
 
@@ -56,9 +56,9 @@ class TweetGetter():
     def process_tweets(self, tweets, mentions=False):
         for tweet in tweets:
             if mentions:
-                self.check_max_mention_id(tweet['id'])
+                self.check_mention_id(tweet['id'])
             else:
-                self.check_max_fav_id(tweet['id'])
+                self.check_fav_id(tweet['id'])
 
 
             url = tweet['entities']['urls'][0]['expanded_url']
@@ -105,9 +105,9 @@ class TweetGetter():
 
     def get_mentions(self):
         print 'getting mentions'
-        if self.max_mention_id > 0:
+        if self.mention_id > 0:
             self.process_tweets(
-                self.api.get_mentions_timeline(since_id = self.max_mention_id, count=200),
+                self.api.get_mentions_timeline(since_id = self.mention_id, count=200),
                 mentions=True
             )
         else:
@@ -120,9 +120,9 @@ class TweetGetter():
 
     def get_favorites(self):
         print 'getting favs'
-        if self.max_fav_id > 0:
+        if self.fav_id > 0:
             self.process_tweets(
-                self.api.get_favorites(since_id = self.max_fav_id, count=200)
+                self.api.get_favorites(since_id = self.fav_id, count=200)
             )
         else:
             self.process_tweets(self.api.get_favorites(count=200))
