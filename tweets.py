@@ -9,7 +9,7 @@ from datetime import datetime
 
 
 class TweetGetter():
-    TWITTER_USER = User.query.get(8)
+    TWITTER_USER = User.query.filter_by(name='DataNews')
     api =  Twython('51ghURR9oSl4eRlbiEkA', 
                   'YyEnU1fUOzatFKTABN3rYQBjM6jWAi5p2AfTXg7XBZY',
                   '285652996-KCBSoeyXCkEo9GDku7A6u08FDA2TjSPelKvjOqdt', 
@@ -47,7 +47,7 @@ class TweetGetter():
         data = res.get_data() 
 
         #This parses the content
-        soup = BeautifulSoup(data, fromEncoding="UTF-8")
+        soup = BeautifulSoup(data, from_encoding="UTF-8")
         title = soup.find('title')
 
         #This outputs the content :)
@@ -83,6 +83,9 @@ class TweetGetter():
             else:
               user = self.TWITTER_USER
 
+            print 'trying to add post for:'
+            print user.name
+
             post = Item(url = url,
                            title = title,
                            kind = 'post',
@@ -91,14 +94,6 @@ class TweetGetter():
                            user_id = user.id)
 
             db.session.add(post)
-            db.session.commit()
-
-            vote = Vote(user_from_id = user.id,
-                           user_to_id = user.id,
-                           item_id = post.id,
-                           timestamp = time)
-
-            db.session.add(vote)
             db.session.commit()
         return
 
