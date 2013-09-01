@@ -6,14 +6,21 @@ from pprint import pprint
 from bs4 import BeautifulSoup
 from mechanize import Browser
 from datetime import datetime
+import re
+import os 
+
+TWITTER_KEY = os.environ.get('TWITTER_KEY')
+TWITTER_SECRET = os.environ.get('TWITTER_SECRET')
+TWITTER_OAUTH_TOKEN = os.environ.get('TWITTER_OAUTH_TOKEN')
+TWITTER_OAUTH_SECRET = os.environ.get('TWITTER_OAUTH_SECRET')
 
 
 class TweetGetter():
     TWITTER_USER = User.query.filter_by(name='DataNews').first()
-    api =  Twython('51ghURR9oSl4eRlbiEkA', 
-                  'YyEnU1fUOzatFKTABN3rYQBjM6jWAi5p2AfTXg7XBZY',
-                  '285652996-KCBSoeyXCkEo9GDku7A6u08FDA2TjSPelKvjOqdt', 
-                  '6wP5wsNWOq47lmk83yiGKD5F6QPxkoXlDRxhGqRH6RY')
+    api =  Twython(TWITTER_KEY, 
+                   TWITTER_SECRET,
+                   TWITTER_OAUTH_TOKEN, 
+                   TWITTER_OAUTH_SECRET)
 
     def __init__(self):
         twitter = Twitter.query.limit(1).first()
@@ -40,18 +47,26 @@ class TweetGetter():
             db.session.commit()
 
 
-    def get_title(self, url):
+    def get_title_url(self, url):
         #This retrieves the webpage content
         br = Browser()
-        res = br.open(url)
+        try:
+            res = br.open(url)
+        except:
+            return False
+        url = res.geturl()
         data = res.get_data() 
+
 
         #This parses the content
         soup = BeautifulSoup(data, from_encoding="UTF-8")
         title = soup.find('title')
 
         #This outputs the content :)
-        return title.text
+        return {
+                'title' : title.text,
+                'url' : url,
+                }
 
     def process_tweets(self, tweets, mentions=False):
         for tweet in tweets:
@@ -62,14 +77,22 @@ class TweetGetter():
                 print 'duplicate post'
                 continue
 
+
+            content = self.get_title_url(url)
+
+            if not content:
+                print 'silly robots will not let us visit'
+                #TODO: Find better way of dealing with sites we can't visit because robots.txt
+                continue
+
+            title = content['title']
+            url = content['url']
             text = tweet['text']
-            title = self.get_title(url)
             time = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             twitter_username = tweet['user']['screen_name']
 
-            print text
-            print title
-            print twitter_username
+            if not title:
+                title = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', text)
 
             if mentions:
               user = User.query.filter_by(twitter_handle=twitter_username).first()
@@ -78,7 +101,9 @@ class TweetGetter():
             else:
               user = self.TWITTER_USER
 
-            print 'trying to add post for:'
+            print 'Adding Post:'
+            print title, url, text, twitter_username
+            print 'DataNews User:'
             print user.name
 
             post = Item(url = url,
