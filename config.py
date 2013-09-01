@@ -36,12 +36,15 @@ class ProductionConfig(Config):
     SECRET_KEY = os.environ.get('SECRET_KEY')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
+    SECURITY_PASSWORD_HASH = 'bcrypt'
+    SECURITY_PASSWORD_SALT = '$2a$16$PnnIgfMwkOjGX4SkHqSOPO'
+
     #Mail config
     MAIL_SERVER = os.environ.get('MAILGUN_SMTP_SERVER')
-    MAIL_PORT = int(os.environ.get('MAILGUN_SMTP_PORT', 25))
-    MAIL_USE_SSL = True
+    MAIL_PORT = int(os.environ.get('MAILGUN_SMTP_PORT', 587))
     MAIL_USERNAME = os.environ.get('MAILGUN_SMTP_LOGIN')
     MAIL_PASSWORD = os.environ.get('MAILGUN_SMTP_PASSWORD')
+    SECURITY_EMAIL_SENDER = 'joe@joehand.org'
 
 class DevelopmentConfig(Config):
     DEBUG = True
