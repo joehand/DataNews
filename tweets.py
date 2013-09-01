@@ -55,11 +55,6 @@ class TweetGetter():
 
     def process_tweets(self, tweets, mentions=False):
         for tweet in tweets:
-            if mentions:
-                self.check_mention_id(tweet['id'])
-            else:
-                self.check_fav_id(tweet['id'])
-
 
             url = tweet['entities']['urls'][0]['expanded_url']
             post = Item.query.filter_by(url = url).first()
@@ -95,6 +90,11 @@ class TweetGetter():
 
             db.session.add(post)
             db.session.commit()
+
+            if mentions:
+                self.check_mention_id(tweet['id'])
+            else:
+                self.check_fav_id(tweet['id'])
         return
 
 
