@@ -54,14 +54,15 @@ if app.debug:
     from flask_debugtoolbar import DebugToolbarExtension
     toolbar = DebugToolbarExtension(app)
 else:
-    from config import ADMINS, MAIL_SERVER, MAIL_PORT, MAIL_USERNAME, MAIL_PASSWORD
     import logging
     from logging.handlers import SMTPHandler
     from logging import Formatter
     credentials = None
-    if MAIL_USERNAME or MAIL_PASSWORD:
-        credentials = (MAIL_USERNAME, MAIL_PASSWORD)
-    mail_handler = SMTPHandler((MAIL_SERVER, MAIL_PORT), 'no-reply@' + MAIL_SERVER, ADMINS, 'data news error!!', credentials)
+    if app.config['MAIL_USERNAME'] or app.config['MAIL_PASSWORD']:
+        credentials = (app.config['MAIL_USERNAME'], app.config['MAIL_PASSWORD'])
+    mail_handler = SMTPHandler((app.config['MAIL_SERVER'], app.config['MAIL_PORT']),
+                            'no-reply@' + app.config['MAIL_SERVER'], 
+                            app.config['ADMINS'], 'data news error!!', credentials)
     mail_handler.setLevel(logging.ERROR)
     mail_handler.setFormatter(Formatter('''
     Message type:       %(levelname)s
