@@ -42,6 +42,9 @@ def user_registered_sighandler(app, user, confirm_token):
 #Add various extensions
 mail = Mail(app)
 assets = Environment(app)
+
+assets.auto_build = app.config['ASSETS_AUTO_BUILD']
+
 compress = Compress(app)
 
 # Set tempalate globals

@@ -1,3 +1,10 @@
+body {
+    overflow-x:hidden;
+}
+
+.navbar-static-top {
+    width:100%;
+}
 
 .navbar-nav>li.active a {
     border-bottom:2px solid #7a62d3;

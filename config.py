@@ -23,6 +23,8 @@ class Config(object):
     SECURITY_EMAIL_SUBJECT_PASSWORD_NOTICE = 'DataNews: your password has been reset'
     SECURITY_EMAIL_SUBJECT_PASSWORD_CHANGE_NOTICE =  'DataNews: your password changed'
 
+    ASSETS_AUTO_BUILD = True
+    
 class ProductionConfig(Config):
     DEBUG = False
     SECRET_KEY = os.environ.get('SECRET_KEY')
@@ -37,6 +39,8 @@ class ProductionConfig(Config):
     MAIL_USERNAME = os.environ.get('MAILGUN_SMTP_LOGIN')
     MAIL_PASSWORD = os.environ.get('MAILGUN_SMTP_PASSWORD')
     SECURITY_EMAIL_SENDER = 'joe@joehand.org'
+
+    ASSETS_AUTO_BUILD = False
 
 class DevelopmentConfig(Config):
     DEBUG = True
