@@ -1,8 +1,0 @@
-RewriteEngine On   
-
-RewriteCond %{HTTP_HOST} ^app.herokuapp.com$ [NC]
-RewriteRule ^(.*)$ http://mycustomdomain.com/$1 [R=301,L]
-
-
-RewriteCond %{HTTP_HOST} ^www.datanews.co$ [NC]
-RewriteRule ^(.*)$ http://datanews.co/$1 [R=301,L]
