@@ -6,10 +6,6 @@ from pprint import pprint
 from bs4 import BeautifulSoup
 from mechanize import Browser
 from datetime import datetime
-from markdown import Markdown
-
-md = Markdown(safe_mode='replace', 
-                        html_replacement_text='--RAW HTML NOT ALLOWED--')
 
 
 class TweetGetter():
@@ -90,7 +86,7 @@ class TweetGetter():
             post = Item(url = url,
                            title = title,
                            kind = 'post',
-                           text = md.convert(text),
+                           text = text,
                            timestamp = time,
                            user_id = user.id)
 

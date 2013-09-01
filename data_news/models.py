@@ -228,6 +228,6 @@ class Twitter(db.Model):
         Should only be one row in this table
     """
     id = db.Column(db.Integer, primary_key = True)
-    max_mention_id = db.Column(db.Integer)
-    max_fav_id = db.Column(db.Integer)
+    max_mention_id = db.Column(db.BigInteger)
+    max_fav_id = db.Column(db.BigInteger)
 
