@@ -3,6 +3,7 @@ from data_news import db
 from data_news.models import User, Item, Vote, Twitter
 from twython import Twython
 from pprint import pprint
+from markdown import Markdown
 from bs4 import BeautifulSoup
 from mechanize import Browser
 from datetime import datetime
@@ -15,6 +16,7 @@ TWITTER_OAUTH_TOKEN = os.environ.get('TWITTER_OAUTH_TOKEN')
 TWITTER_OAUTH_SECRET = os.environ.get('TWITTER_OAUTH_SECRET')
 
 
+md = Markdown()
 class TweetGetter():
     TWITTER_USER = User.query.filter_by(name='DataNews').first()
     api =  Twython(TWITTER_KEY, 
@@ -109,7 +111,7 @@ class TweetGetter():
             post = Item(url = url,
                            title = title,
                            kind = 'post',
-                           text = text,
+                           text =  md.convert(tweet['text']),
                            timestamp = time,
                            user_id = user.id)
 
