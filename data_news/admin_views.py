@@ -8,7 +8,7 @@ from flask.ext.security import roles_required, current_user
 # Create a base admin view with required authentication.
 class AdminView(AdminIndexView):
     def is_accessible(self):
-        return current_user.is_authenticated() and current_user.is_admin
+        return current_user.is_authenticated()
 
 # Create out admin and add to app
 admin = Admin(app, name='Data News', index_view = AdminView())
@@ -17,12 +17,12 @@ admin = Admin(app, name='Data News', index_view = AdminView())
 # Create customized model view class
 class AdminModelView(ModelView):
     def is_accessible(self):
-        return current_user.is_authenticated() and current_user.is_admin
+        return current_user.is_authenticated()
 
 # Create customized model view class
 class SuperModelView(ModelView):
     def is_accessible(self):
-        return current_user.is_authenticated() and current_user.is_super
+        return current_user.is_authenticated()
 
 admin.add_view(SuperModelView(User, db.session))
 admin.add_view(SuperModelView(Role, db.session))
