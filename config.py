@@ -37,7 +37,7 @@ class ProductionConfig(Config):
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
     SECURITY_PASSWORD_HASH = 'bcrypt'
-    SECURITY_PASSWORD_SALT = '$2a$16$PnnIgfMwkOjGX4SkHqSOPO'
+    SECURITY_PASSWORD_SALT = os.environ.get('PASSWORD_SALT')
 
     #Mail config
     MAIL_SERVER = os.environ.get('MAILGUN_SMTP_SERVER')
