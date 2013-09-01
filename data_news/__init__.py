@@ -11,6 +11,7 @@ from template_utils import get_domain, pretty_date
 app = Flask(__name__, static_folder='static', static_url_path='')
 
 if os.environ.get('HEROKU_PROD', False):
+    app.config['HEROKU_PROD'] = True
     app.config.from_object('config.ProductionConfig')
 else:
     app.config.from_object('config.DevelopmentConfig')

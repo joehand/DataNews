@@ -1,19 +1,14 @@
     
     <script>
-      {% if current_user.id %}
+        {% if current_user.id %}
         var currentUser = {{current_user.id}};
-      {% else %}
+        {% else %}
         var currentUser = false;
-      {% endif %}
+        {% endif %}
     </script>
 
-    <script type="text/javascript" src="{{ url_for('static', filename='js/require.js')}}"></script>
-    <script>
-      requirejs.config({
-        //set baseUrl here so I can use template
-        baseUrl: "{{ url_for('static', filename='js/')}}"
-      });
-      require(["{{ url_for('static', filename='js/config.js')}}"], function (common) {
-        require(['main']);
-      });
-    </script>
+    {% if config['HEROKU_PROD'] %}
+    <script data-main="{{ url_for('static', filename='js/app.min')}}" src="{{ url_for('static', filename='js/require.js')}}"></script>
+    {% else %}
+    <script data-main="{{ url_for('static', filename='js/app')}}" src="{{ url_for('static', filename='js/require.js')}}"></script>
+    {% endif %}
