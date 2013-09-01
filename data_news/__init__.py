@@ -5,6 +5,7 @@ from flask.ext.security.signals import user_registered
 from flask.ext.security import Security, SQLAlchemyUserDatastore, current_user
 from flask.ext.mail import Mail
 from flask.ext.assets import Environment
+from flask.ext.compress import Compress
 from datetime import datetime
 from template_utils import get_domain, pretty_date
 
@@ -40,6 +41,7 @@ def user_registered_sighandler(app, user, confirm_token):
 #Add various extensions
 mail = Mail(app)
 assets = Environment(app)
+compress = Compress(app)
 
 # Set tempalate globals
 app.jinja_env.globals['get_domain'] = get_domain
