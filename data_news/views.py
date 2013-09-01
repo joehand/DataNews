@@ -82,11 +82,10 @@ def item(id):
         item = item_obj, form = commentForm))
 
     if commentForm.validate_on_submit():
-
         if commentForm.edit.data:
             item_obj.text = clean(md.convert(commentForm.text.data), allowed_tags)
+            item_obj = db.session.merge(item_obj)
             db.session.commit()
-            db.session.refresh(item_obj, ['text'])
 
             flash('Edit saved', 'info')
             response = make_response(render_template('item.html',
