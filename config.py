@@ -2,6 +2,9 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
+    # administrator list
+    ADMINS = ['joe.a.hand@gmail.com']
+
     DEBUG = False
     TESTING = False
     SECRET_KEY = 'this_is_so_secret' #used for development, reset in prod
@@ -39,7 +42,7 @@ class DevelopmentConfig(Config):
     DEBUG = True
 
     WHOOSH_BASE = os.path.join(basedir, 'search.db')
-    
+
     DEBUG_TB_INTERCEPT_REDIRECTS = False
 
     DEBUG_TB_PANELS = (
