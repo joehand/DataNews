@@ -1,4 +1,9 @@
-define(['backbone', 'jquery', 'model/model'], function(Backbone, $, VoteModel) {
+/* ========================================================================
+ * View JS File for DataNews
+ * Author: JoeHand
+ * ========================================================================
+ */
+define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
 
     var ItemView = Backbone.View.extend({
         events: {

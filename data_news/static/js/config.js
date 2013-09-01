@@ -7,8 +7,8 @@
 //directory.
 requirejs.config({
     paths: {
-        'model'              : 'app/models', //shortcuts for model/view files
-        'view'               : 'app/views',
+        'model'              : 'model', //shortcuts for model/view files
+        'view'               : 'view',
         'jquery'             : 'lib/jquery-2.0.3',
         'underscore'         : 'lib/underscore',
         'backbone'           : 'lib/backbone',

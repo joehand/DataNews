@@ -1,3 +1,8 @@
+/* ========================================================================
+ * Models JS File for DataNews
+ * Author: JoeHand
+ * ========================================================================
+ */
 define(['backbone', 'underscore'], function(Backbone, _) {
 
     var API_VER = 'v0',

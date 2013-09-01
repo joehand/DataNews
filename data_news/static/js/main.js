@@ -1,9 +1,13 @@
+/*! =======================================================================
+ * Main JS File for DataNews
+ * Author: JoeHand
+ * ======================================================================== */
 define([
     'backbone',
     'underscore',
     'jquery',
-    'model/model',
-    'view/view',
+    'model',
+    'view',
     'bootstrap',
     'pjax'
 ], function(Backbone, _, $, AppModel, AppView) {
