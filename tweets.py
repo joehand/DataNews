@@ -3,7 +3,7 @@ from data_news import db
 from data_news.models import User, Item, Vote, Twitter
 from twython import Twython
 from pprint import pprint
-from BeautifulSoup import BeautifulSoup
+from bs4 import BeautifulSoup
 from mechanize import Browser
 from datetime import datetime
 from markdown import Markdown
