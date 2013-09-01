@@ -21,13 +21,14 @@ else:
 db = SQLAlchemy(app)
 
 from models import User, Role
-from forms import ExtendedRegisterForm
+from forms import ExtendedRegisterForm, ExtendedLoginForm
 
 # Setup Flask-Security
 user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 # Add security blueprint with custom registration form (email optional)
 security = Security(app, user_datastore,
-                    register_form=ExtendedRegisterForm)
+                    register_form=ExtendedRegisterForm,
+                    login_form=ExtendedLoginForm)
 
 # Auto add role and creation time to new users
 @user_registered.connect_via(app)

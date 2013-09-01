@@ -108,17 +108,23 @@ class User(db.Model, UserMixin):
                 return True
         return False
 
-    @staticmethod
-    def make_unique_name(name):
-        if User.query.filter(
-            func.lower('name') == func.lower(name)).first() == None:
+    @classmethod
+    def find_user_by_name(cls, name):
+        user = cls.query.filter(
+                    func.lower(cls.name) == func.lower(name)).first()
+        if user:
+            return user
+        return None
+
+    @classmethod
+    def make_unique_name(cls, name):
+        if not cls.find_user_by_name(name):
             return name
         version = 2
         while True:
             new_name = name + str(version)
-            if User.query.filter(
-                func.lower('name') == func.lower(new_name)).first() == None:
-                break
+            if not cls.find_user_by_name(new_name):
+                break 
             version += 1
         return new_name
 
