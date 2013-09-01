@@ -70,7 +70,6 @@ def item(id):
 
     if request.args.get('edit', False) and item_obj.kind == 'comment'\
          and current_user.id == item_obj.user_id:
-        print 'editing'
         commentForm.text.data = markdownify(item_obj.text)
         commentForm.edit.data = True
 
@@ -87,6 +86,7 @@ def item(id):
         if commentForm.edit.data:
             item_obj.text = clean(md.convert(commentForm.text.data), allowed_tags)
             db.session.commit()
+            db.session.refresh(item_obj, ['text'])
 
             flash('Edit saved', 'info')
             response = make_response(render_template('item.html',
