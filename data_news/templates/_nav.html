@@ -2,7 +2,7 @@
   {% if request.endpoint == endpoint %} 
     {% set cls='active' %}
   {% endif %}
-  <li class='{{cls}} pjax-active'><a href="{{url_for(endpoint, **url_args)}}" data-pjax>{{display}}</a>
+  <li class='{{cls}} pjax-active'><a href="{{url_for(endpoint, **url_args)}}" data-pjax>{{display}}</a></li>
 {% endmacro %}
 
 

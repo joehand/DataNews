@@ -6,12 +6,17 @@
 {% if not comment %}
     {% set comment = item %}
 {% endif %}
+{% if comment.parent.kind == 'page' %}
+{% set parent_url = url_for('item', title=comment.parent.title.lower()) %}
+{% else %}
+{% set parent_url = url_for('item', id=comment.parent_id) %}
+{% endif %}
 <div class="item comment {% if not item_page %}col-md-{{width}} col-lg-{{width}} col-sm-{{width}} col-xs-{{width}} {% if depth %}col-lg-offset-{{depth}} col-md-offset-{{depth}} col-sm-offset-{{depth}}{% endif %}{% endif %}" id="item-{{comment.id}}" data-id="{{comment.id}}" data-user="{{comment.user.id}}">
     <div class="row comment-info">
         {% include "_vote.html" %}
         By <a href="{{url_for('user', name=comment.user.name)}}" data-pjax>{{comment.user.name}}</a>
         {% if item_page %}
-        <small class="text-muted"> (<a href="{{url_for('item', id=comment.parent_id)}}" data-pjax>parent</a>)</small>
+        <small class="text-muted"> (<a href="{{parent_url}}" data-pjax>parent</a>)</small>
         {% else %}
         <a href="{{url_for('item', id=comment.id)}}" data-pjax>{{pretty_date(comment.timestamp)}}</a>
         {% endif %}

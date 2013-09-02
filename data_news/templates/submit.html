@@ -13,6 +13,9 @@
               {{ wtf.horizontal_field(form.url, autofocus=autofocus) }}
               {{ wtf.horizontal_field(form.title) }}
               {{ wtf.horizontal_field(form.text) }}
+              {% if current_user.is_super %}
+              {{ wtf.horizontal_field(form.kind) }}
+              {% endif %}
 
 
               <div class="form-group">

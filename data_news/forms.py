@@ -18,7 +18,7 @@ class PostForm(Form):
                        validators=[url()])
     text = TextAreaField('Text', description='',
                        validators=[])
-    kind = HiddenField('')
+    kind = TextField('Kind')
 
 class CommentForm(Form):
     """ Form to submit a Comment

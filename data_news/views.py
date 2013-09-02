@@ -1,5 +1,5 @@
 from data_news import app, db
-from flask import render_template, request, flash,\
+from flask import render_template, request, flash, abort, \
                  redirect, url_for, jsonify, session, make_response, g
 from flask.ext.security import login_required, current_user
 from urlparse import urlparse
@@ -13,13 +13,20 @@ from forms import PostForm, CommentForm, UserForm, SearchForm
 
 md = Markdown()
 allowed_tags = ['p','em','strong','code','pre','blockquote','ul','li','ol']
+super_tags = ['p','em','strong','code','pre','blockquote','ul','li','ol','h3','h4','h5','h6','img']
 def submit_item(url=None, title=None, text=None, 
                     kind='comment', parent_id=None):
     """ Submits an item (post or comment) to db
-    """      
+    """ 
+    if current_user.is_super:
+        text = clean(md.convert(text), super_tags)
+    else:
+        text = clean(md.convert(text), allowed_tags)
+
+
     item = Item(url = url,
                 title = title,
-                text = clean(md.convert(text), allowed_tags),
+                text = text,
                 kind = kind,
                 parent_id = parent_id,
                 timestamp = datetime.utcnow(),
@@ -42,6 +49,7 @@ def before_request():
     elif session.get('visited_index', False):
         session['return_anon'] = True
     g.search_form = SearchForm()
+    g.pages = Item.query.filter_by(kind='page')
 
 @app.route('/')
 @app.route('/<int:page>')
@@ -56,8 +64,9 @@ def index(page = 1):
         items = posts)
 
 
+@app.route('/<title>', methods = ['GET', 'POST'])
 @app.route('/item/<int:id>', methods = ['GET', 'POST'])
-def item(id):
+def item(id=None,title=None):
     """ View for a singular item (post or comment)
         Form is used to comment on that post or comment
 
@@ -65,7 +74,11 @@ def item(id):
             Its better now but the comment form is not clearing.
             Also pjax doesn't scroll to #item-id
     """
-    item_obj = Item.query.get_or_404(id)
+    if id == None:
+        item_obj = Item.find_by_title(title).first_or_404()
+    else:
+        item_obj = Item.query.get_or_404(id)
+
     commentForm = CommentForm(request.values, kind="comment")
 
     if request.args.get('edit', False) and item_obj.kind == 'comment'\
@@ -104,7 +117,10 @@ def item(id):
         next_url = path + '#item-' + str(comment.id)
 
         #Redefine the items to pass to template for PJAX
-        item_obj = Item.query.get_or_404(next_id)
+        if 'item' in path:
+            item_obj = Item.query.get_or_404(next_id)
+        else: 
+            item_obj = Item.find_by_title(next_id).first_or_404()
         commentForm = CommentForm()
         commentForm.text.data = '' #form data isn't clearing, so do it manually
 
@@ -131,7 +147,7 @@ def items(page = 1):
         for key, val in request.args.iteritems():
             filters[key] = val
         if 'name' in filters:
-            filters['user_id'] = User.query.filter_by(name=request.args['name']).first().id
+            filters['user_id'] = User.find_user_by_name(request.args['name']).first().id
             filters.pop('name')
 
         if '_pjax' in filters:
@@ -141,21 +157,6 @@ def items(page = 1):
     else:
         items_obj = Item.query.order_by(Item.timestamp.desc()).paginate(page)
     return render_template('list.html', items=items_obj, filters=filters)
-
-@app.route('/search', methods = ['GET', 'POST'])
-@app.route('/search/<query>')
-@app.route('/search/<query>/<int:page>')
-def search(query=None, page=1):
-    if g.search_form.validate_on_submit():
-        return redirect(url_for('search', query=g.search_form.search.data))
-    if request.args.get('query', None):
-        query = request.args.get('query')
-
-    results = Item.paged_search(query, page)
-    print results
-    return render_template('list.html',
-        query = query,
-        items = results)
 
 @app.route('/submit', methods = ['GET', 'POST'])
 @login_required
@@ -172,13 +173,19 @@ def submit():
             flash('URL already submitted', category = 'warning')
             return redirect(url_for('item', id=post.id))
 
+        if current_user.is_super and form.kind.data:
+            kind = form.kind.data
+        else:
+            kind = 'post'
+
         post = submit_item(url = form.url.data,
                            title = form.title.data, 
                            text = form.text.data,
-                           kind = 'post')
+                           kind = kind)
 
         flash('Thanks for the submission!', category = 'success')
-        return redirect(url_for('item', id=post.id)) 
+
+        return redirect(url_for('index'))
     return render_template('submit.html', form=form, title='Submit')
 
 
@@ -186,12 +193,11 @@ def submit():
 def user(name):
     """ Get the beautiful user page
         Also a user can edit their own info here
-        TODO: Handle upper/lower case in names better
         TODO: Add about section? And gravatar option?
               If we do more complex stuff, 
               allow use to see 'public' profile via request arg
     """
-    user = User.query.filter_by(name = name).first_or_404()
+    user = User.find_user_by_name(name).first_or_404()
     if user == current_user:
         form = UserForm()
         if form.validate_on_submit():    
@@ -204,15 +210,28 @@ def user(name):
         return render_template('user.html', user=user, form=form, title=user.name)
     return render_template('user.html', user=user, title=user.name)
 
-@app.route('/about')
-def about():
-    return render_template('about.html')
+
+@app.route('/search', methods = ['GET', 'POST'])
+@app.route('/search/<query>')
+@app.route('/search/<query>/<int:page>')
+def search(query=None, page=1):
+    if g.search_form.validate_on_submit():
+        return redirect(url_for('search', query=g.search_form.search.data))
+    if request.args.get('query', None):
+        query = request.args.get('query')
+
+    results = Item.paged_search(query, page)
+    print results
+    return render_template('list.html',
+        query = query,
+        items = results)
+
 
 @app.errorhandler(404)
-def internal_error(error):
+def internal_404(error):
     return render_template('404.html'), 404
 
 @app.errorhandler(500)
-def internal_error(error):
+def internal_500(error):
     db.session.rollback()
     return render_template('500.html'), 500

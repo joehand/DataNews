@@ -111,19 +111,19 @@ class User(db.Model, UserMixin):
     @classmethod
     def find_user_by_name(cls, name):
         user = cls.query.filter(
-                    func.lower(cls.name) == func.lower(name)).first()
+                    func.lower(cls.name) == func.lower(name))
         if user:
             return user
         return None
 
     @classmethod
     def make_unique_name(cls, name):
-        if not cls.find_user_by_name(name):
+        if not cls.find_user_by_name(name).first():
             return name
         version = 2
         while True:
             new_name = name + str(version)
-            if not cls.find_user_by_name(new_name):
+            if not cls.find_user_by_name(new_name).first():
                 break 
             version += 1
         return new_name
@@ -143,7 +143,7 @@ class Item(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String(140))
     url = db.Column(db.String(), unique=True)
-    text = db.Column(db.String(140))
+    text = db.Column(db.String(3818))
     timestamp = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     kind = db.Column(db.String)
@@ -216,6 +216,12 @@ class Item(db.Model):
                                    key=lambda x: x.post_score, 
                                    reverse=True)[start:end]
         return items_paged
+
+    @classmethod
+    def find_by_title(cls, title, kind='page'):
+        item = cls.query.filter_by(kind=kind).filter(
+                    func.lower(cls.title) == func.lower(title))
+        return item
 
     @classmethod
     def paged_search(cls, query, page=1):

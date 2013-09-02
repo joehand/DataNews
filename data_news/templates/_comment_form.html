@@ -1,5 +1,10 @@
 {% import "bootstrap_wtf.html" as wtf %}
-<form class="form form-horizontal comment-form {% if not item_page or edit %}comment-inline{% endif %}"method="post" action="{{url_for('item', id=item.id)}}" data-pjax>
+{% if item.kind == 'page' %}
+{% set form_url = url_for('item', title=item.title.lower()) %}
+{% else %}
+{% set form_url = url_for('item', id=item.id) %}
+{% endif %}
+<form class="form form-horizontal comment-form {% if not item_page or edit %}comment-inline{% endif %}"method="post" action="{{form_url}}" data-pjax>
   {{ form.hidden_tag() }}
   
   {% if not item_page %}

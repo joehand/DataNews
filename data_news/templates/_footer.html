@@ -1,10 +1,17 @@
-<footer class="row">
-<p class="text-center">Made by Hand | <a href="mailto:joe@joehand.org">Feedback Appreciated</a></p>
-<!--
-<ul class="nav nav-pills col-md-9 col-lg-9">
-  <li class=""><a href="{{url_for('about')}}">Why?</a></li>
-  <li class=""><a href="">Feature Requests</a></li>
-  <li class=""><a href="">Bugs</a></li>
-  <li class=""><a href="http://joehand.org">Made by Hand</a></li>
-</ul>-->
+{% macro footer_link(title) %}
+  {% if request.path[1:] == title.lower() %} 
+    {% set cls='active' %}
+  {% endif %}
+  <li class='{{cls}} pjax-active'><a href="{{url_for('item', title=title.lower())}}" data-pjax>{{title}}</a></li>
+{% endmacro %}
+
+<footer class="site-footer row">
+    <hr>
+    <ul class="nav nav-pills nav-justified">
+    {% for page in g.pages %}
+        {{footer_link(page.title)}}
+
+    {% endfor %}
+    </ul>
+    <p class="text-center"><a href="http://joehand.org">Made by Hand</a> | <a href="mailto:joe@joehand.org">Feedback Appreciated</a></p>
 </footer>

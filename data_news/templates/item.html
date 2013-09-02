@@ -7,6 +7,8 @@
             {% set item_page = True %}
             {% if item.kind == 'post' %}
               {% include "_post.html" %}
+            {% elif item.kind == 'page' %}
+              {% include "_page.html" %}
             {% elif item.kind == 'comment' %}
               {% include "_comment.html" %}
             {% endif %}

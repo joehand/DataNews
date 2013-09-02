@@ -127,6 +127,14 @@ textarea.comment-input:active,
     margin-bottom:25px;
 }
 
+.site-footer hr {
+    margin-bottom:0px;
+}
+
+.site-footer p {
+    margin:15px 0;
+}
+
 @media (max-width: 768px) { 
     .navbar-nav>li.active a {
         border-bottom:0px;
