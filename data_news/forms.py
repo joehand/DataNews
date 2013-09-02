@@ -85,7 +85,7 @@ class ExtendedRegisterForm(RegisterForm):
             self.name.errors.append('Must be between 2 and 15 characters')
             return False
 
-        user = User.find_user_by_name(name)
+        user = User.find_user_by_name(name).first()
         if user is None:
             return True
         else:
@@ -110,7 +110,7 @@ class ExtendedLoginForm(LoginForm):
             self.name.errors.append('Please enter a name')
             return False   
 
-        self.user = User.find_user_by_name(name)
+        self.user = User.find_user_by_name(name).first()
 
         if self.user is None:
             self.user = User.query.filter_by(email=name).first()
