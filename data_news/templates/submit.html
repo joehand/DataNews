@@ -8,7 +8,6 @@
         <div class="row">
             <form class="form form-horizontal" method="post" action="{{request.url}}">
               {{ form.hidden_tag() }}
-              {{ wtf.form_errors(form, "only") }}
 
               {{ wtf.horizontal_field(form.url, autofocus=autofocus) }}
               {{ wtf.horizontal_field(form.title) }}

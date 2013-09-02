@@ -110,14 +110,35 @@ class User(db.Model, UserMixin):
 
     @classmethod
     def find_user_by_name(cls, name):
-        user = cls.query.filter(
+        """ Finds user by name, making sure to look in all lowercase
+            Returns Query object not user! Then can use first_or_404 if I want.
+        """
+        user_query = cls.query.filter(
                     func.lower(cls.name) == func.lower(name))
-        if user:
-            return user
-        return None
+        return user_query
+
+    @classmethod
+    def find_user_by_email(cls, email):
+        """ Finds user by EMAIL, making sure to look in all lowercase
+            Returns Query object not user! Then can use first_or_404 if I want.
+        """
+        user_query = cls.query.filter(
+                    func.lower(cls.email) == func.lower(email))
+        return user_query
+
+    @classmethod
+    def find_user_by_twitter(cls, twitter):
+        """ Finds user by EMAIL, making sure to look in all lowercase
+            Returns Query object not user! Then can use first_or_404 if I want.
+        """
+        user_query = cls.query.filter(
+                    func.lower(cls.twitter_handle) == func.lower(twitter))
+        return user_query
 
     @classmethod
     def make_unique_name(cls, name):
+        """ Checks if name is being used. If it is, returns a new version.
+        """
         if not cls.find_user_by_name(name).first():
             return name
         version = 2
@@ -219,15 +240,15 @@ class Item(db.Model):
 
     @classmethod
     def find_by_title(cls, title, kind='page'):
-        item = cls.query.filter_by(kind=kind).filter(
+        item_query = cls.query.filter_by(kind=kind).filter(
                     func.lower(cls.title) == func.lower(title))
-        return item
+        return item_query
 
     @classmethod
     def paged_search(cls, query, page=1):
         return paginate(cls.query.whoosh_search(query), page)
 
-whooshalchemy.whoosh_index(app, Item)
+#whooshalchemy.whoosh_index(app, Item)
 
 class Twitter(db.Model):
     """ Keep track of a few max id's for fetching via Twitter ID.

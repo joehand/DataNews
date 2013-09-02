@@ -5,8 +5,10 @@ from flask_wtf.html5 import URLField, EmailField
 from wtforms.validators import url, required, email, optional
 from flask_security.forms import RegisterForm, LoginForm
 from flask_security.utils import verify_and_update_password
+from flask.ext.security import current_user
 from sqlalchemy import func
 import re
+
 
 class PostForm(Form):
     """ Form to submit a Post
@@ -37,24 +39,68 @@ class UserForm(Form):
     """
     name = TextField('Name',  validators=[required()], description="Public display name (Unique)")
     email = EmailField('Email',   validators=[optional(), email()])
-    twitter = TextField('Twitter Username',   validators=[])
+    twitter = TextField('Twitter Username',   validators=[optional()])
 
     def validate(self):
-            rv = Form.validate(self)
-            if not rv:
+        rv = Form.validate(self)
+        if not rv:
+            return False
+
+        validate_email = True
+        validate_name = True
+        validate_twitter = True
+
+        if self.twitter.data and '@' in self.twitter.data:
+            self.twitter.data = self.twitter.data.replace('@', '')
+
+        name = self.name.data
+        email = self.email.data
+        twitter = self.twitter.data
+
+        current_name = current_user.name
+        current_email = current_user.email
+        current_twitter = current_user.twitter_handle
+
+
+        if email == current_email:
+            validate_email = False
+        if name == current_name:
+            validate_name = False
+        if twitter == current_twitter:
+            validate_twitter = False
+
+        if not re.match("^[a-zA-Z0-9_-]+$", name):
+            self.name.errors.append('Only letters, digits, dashes, underscores allowed')
+            return False
+
+        if not re.search("[a-zA-Z0-9]", name):
+            self.name.errors.append('Must have at least one letter or number')
+            return False
+
+        if not 1 < len(name) < 16:
+            self.name.errors.append('Must be between 2 and 15 characters')
+            return False
+
+        user = User.find_user_by_name(name).first()
+        if validate_name and user is not None:
+            name = User.make_unique_name(name)
+            self.name.errors.append('Name already taken, perhaps %s suits you?' % name)
+            self.name.data = name
+            return False
+        
+        if validate_email and self.email.data and self.email.validate(self.email.data):
+            user = User.find_user_by_email(self.email.data).first()
+            if user is not None:
+                self.email.errors.append('Email address already used')
                 return False
-            user = User.query.filter(
-                func.lower('name') == func.lower(self.name.data)).first()
-            if user is None:
-                return True
-            else:
-                print False
-                name = User.make_unique_name(self.name.data)
-                self.name.errors = ('Name already taken, perhaps %s suits you?' % name, '')
+
+        if validate_twitter and self.twitter.data:
+            user = User.find_user_by_twitter(self.twitter.data).first()
+            if user is not None:
+                self.twitter.errors.append('Twitter username already used')
                 return False
-            if self.twitter.data and '@' in self.twitter.data:
-                    self.twitter.data = self.twitter.data.replace('@', '')
-            return True
+
+        return True
 
 class ExtendedRegisterForm(RegisterForm):
     """ Extend the Flask-Security registration form
@@ -68,9 +114,13 @@ class ExtendedRegisterForm(RegisterForm):
         if not rv:
             return False
 
-        if self.email.data:
-            return self.email.validate(self.email.data)
+        if self.email.data and self.email.validate(self.email.data):
+            user = User.find_user_by_email(self.email.data).first()
+            if user is not None:
+                self.email.errors.append('Email address already used')
+                return False
 
+        
         name = self.name.data
 
         if not re.match("^[a-zA-Z0-9_-]+$", name):
@@ -86,9 +136,7 @@ class ExtendedRegisterForm(RegisterForm):
             return False
 
         user = User.find_user_by_name(name).first()
-        if user is None:
-            return True
-        else:
+        if user is not None:
             name = User.make_unique_name(name)
             self.name.errors.append('Name already taken, perhaps %s suits you?' % name)
             self.name.data = name
@@ -113,7 +161,7 @@ class ExtendedLoginForm(LoginForm):
         self.user = User.find_user_by_name(name).first()
 
         if self.user is None:
-            self.user = User.query.filter_by(email=name).first()
+            self.user = User.find_user_by_email(email=name).first()
             if self.user is None:
                 self.name.errors.append('User does not exist, please register')
                 return False

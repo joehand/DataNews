@@ -19,7 +19,6 @@
                   <div class="col-md-12 col-lg-12 col-sm-12">
                     <div class="col-md-10 col-lg-10 col-sm-8">
                     {{ form.hidden_tag() }}
-                    {{ wtf.form_errors(form, "only") }}
 
                     {{ wtf.inline_wtf(form.name, value=user.name) }}
                     {% if user.email %}
