@@ -12,8 +12,8 @@ from forms import PostForm, CommentForm, UserForm, SearchForm
 
 
 md = Markdown()
-allowed_tags = ['p','em','strong','code','pre','blockquote','ul','li','ol']
-super_tags = ['p','em','strong','code','pre','blockquote','ul','li','ol','h3','h4','h5','h6','img']
+allowed_tags = ['a', 'p','em','strong','code','pre','blockquote','ul','li','ol']
+super_tags = ['a', 'p','em','strong','code','pre','blockquote','ul','li','ol','h3','h4','h5','h6','img']
 def submit_item(url=None, title=None, text=None, 
                     kind='comment', parent_id=None):
     """ Submits an item (post or comment) to db
