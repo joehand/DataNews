@@ -1,14 +1,14 @@
-"""item_textcol_limit
+"""add big int from twitter
 
-Revision ID: 346b3484b0c9
-Revises: None
-Create Date: 2013-09-01 19:42:02.730648
+Revision ID: 441a00cddd37
+Revises: 115c33325bdf
+Create Date: 2013-08-31 23:49:27.032248
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '346b3484b0c9'
-down_revision = None
+revision = '441a00cddd37'
+down_revision = '115c33325bdf'
 
 from alembic import op
 import sqlalchemy as sa
