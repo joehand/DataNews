@@ -70,15 +70,24 @@ class TweetGetter():
                 'url' : url,
                 }
 
+    def clean_tweet_text(self, tweet):
+        text = tweet['text']
+        entities = tweet['entities']
+        user = tweet['user']
+        for url in entities['urls']:
+            new_url = '<a href="' + url['expanded_url'] + '">' + url['display_url'] + '</a>'
+            text = text.replace(url['url'], new_url)
+        source = '<a class="text-muted" href="https://twitter.com/' \
+                            + user['screen_name'] + '/status/' \
+                            + tweet['id_str'] + '">' \
+                            + '(via @' + user['screen_name'] + ')</a>'
+        text = '<p>' + text + '<small> ' + source + '</small></p>'
+        return text
+        
     def process_tweets(self, tweets, mentions=False):
         for tweet in tweets:
 
             url = tweet['entities']['urls'][0]['expanded_url']
-            post = Item.query.filter_by(url = url).first()
-            if post:
-                print 'duplicate post'
-                continue
-
 
             content = self.get_title_url(url)
 
@@ -87,14 +96,19 @@ class TweetGetter():
                 #TODO: Find better way of dealing with sites we can't visit because robots.txt
                 continue
 
-            title = content['title']
             url = content['url']
-            text = tweet['text']
+            post = Item.query.filter_by(url = url).first()
+            if post:
+                print 'duplicate post'
+                continue
+
+            text = self.clean_tweet_text(tweet)
+            title = content['title']
             time = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             twitter_username = tweet['user']['screen_name']
 
             if not title:
-                title = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', text)
+                title = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', tweet['text'])
 
             if mentions:
               user = User.query.filter_by(twitter_handle=twitter_username).first()
@@ -111,7 +125,7 @@ class TweetGetter():
             post = Item(url = url,
                            title = title,
                            kind = 'post',
-                           text =  md.convert(tweet['text']),
+                           text =  text,
                            timestamp = time,
                            user_id = user.id)
 
