@@ -75,7 +75,6 @@ class TweetGetter():
         text = tweet['text']
         entities = tweet['entities']
         user = tweet['user']
-        print 'going through urls'
         for url in entities['urls']:
             new_url = '<a href="' + url['expanded_url'] + '">' + url['display_url'] + '</a>'
             text = text.replace(url['url'], new_url)
@@ -88,8 +87,6 @@ class TweetGetter():
         
     def process_tweets(self, tweets, mentions=False):
         for tweet in tweets:
-            print 'starting to process a tweet'
-
             url = tweet['entities']['urls'][0]['expanded_url']
 
             content = self.get_title_url(url)
@@ -105,18 +102,14 @@ class TweetGetter():
                 print 'duplicate post'
                 continue
 
-            print 'starting to clean stuff'
             text = self.clean_tweet_text(tweet)
             title = content['title']
             time = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             twitter_username = tweet['user']['screen_name']
 
-            print title
-            print 'getting title'
             if not title:
                 title = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', tweet['text'])
 
-            print 'getting user'
             if mentions:
               user = User.query.filter_by(twitter_handle=twitter_username).first()
               if not user:
@@ -132,7 +125,6 @@ class TweetGetter():
             print '\tDataNews User:'
             print '\t' + user.name
 
-            print 'trying to add post'
             post = Item(url = url.decode('utf-8'),
                            title = title.decode('utf-8'),
                            kind = 'post',
