@@ -66,7 +66,7 @@ class TweetGetter():
 
         #This outputs the content :)
         return {
-                'title' : title.text.encode('utf-8'),
+                'title' : title.text.decode('utf-8'),
                 'url' : url,
                 }
 
@@ -82,7 +82,7 @@ class TweetGetter():
                             + tweet['id_str'] + '">' \
                             + '(via @' + user['screen_name'] + ')</a>'
         text = '<p>' + text + '<small> ' + source + '</small></p>'
-        return text.encode('utf-8')
+        return text.decode('utf-8')
         
     def process_tweets(self, tweets, mentions=False):
         for tweet in tweets:
@@ -118,10 +118,14 @@ class TweetGetter():
               user = self.TWITTER_USER
 
             print 'Adding Post:'
-            print title, url, text, twitter_username
-            print 'DataNews User:'
-            print user.name
+            print '\t' + title
+            print '\t' + url
+            print '\t' + text
+            print '\t' + twitter_username
+            print '\t DataNews User:'
+            print '\t ' + user.name
 
+            print 'trying to add post'
             post = Item(url = url,
                            title = title,
                            kind = 'post',
@@ -131,6 +135,7 @@ class TweetGetter():
 
             db.session.add(post)
             db.session.commit()
+            print 'post added'
 
             if mentions:
                 self.check_mention_id(tweet['id'])
