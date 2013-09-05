@@ -67,8 +67,8 @@ class TweetGetter():
 
         #This outputs the content :)
         return {
-                'title' : title.text,
-                'url' : url,
+                'title' : title.text.encode('utf-8'),
+                'url' : url.encode('utf-8'),
                 }
 
     def clean_tweet_text(self, tweet):
@@ -129,14 +129,14 @@ class TweetGetter():
             print '\t' + url
             print '\t' + text
             print '\t' + twitter_username
-            print '\t DataNews User:'
-            print '\t ' + user.name
+            print '\tDataNews User:'
+            print '\t' + user.name
 
             print 'trying to add post'
-            post = Item(url = url,
-                           title = title,
+            post = Item(url = url.decode('utf-8'),
+                           title = title.decode('utf-8'),
                            kind = 'post',
-                           text =  text,
+                           text =  text.decode('utf-8'),
                            timestamp = time,
                            user_id = user.id)
 
