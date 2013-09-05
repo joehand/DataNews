@@ -66,7 +66,7 @@ class TweetGetter():
 
         #This outputs the content :)
         return {
-                'title' : title.text,
+                'title' : title.text.encode('utf-8'),
                 'url' : url,
                 }
 
@@ -82,7 +82,7 @@ class TweetGetter():
                             + tweet['id_str'] + '">' \
                             + '(via @' + user['screen_name'] + ')</a>'
         text = '<p>' + text + '<small> ' + source + '</small></p>'
-        return text
+        return text.encode('utf-8')
         
     def process_tweets(self, tweets, mentions=False):
         for tweet in tweets:
