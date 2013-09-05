@@ -23,6 +23,8 @@ def submit_item(url=None, title=None, text=None,
     else:
         text = clean(md.convert(text), allowed_tags)
 
+    if kind=='comment' and not parent_id:
+        return None
 
     item = Item(url = url,
                 title = title,
@@ -108,7 +110,10 @@ def item(id=None,title=None):
         
         comment = submit_item(text=commentForm.text.data, parent_id=item_obj.id)
 
-        flash('Thanks for adding to the discussion!', category = 'success')
+        if comment.id and comment.parent_id:
+            flash('Thanks for adding to the discussion!', category = 'success')
+        else:
+            flash('Something went wrong adding your comment. Please try again', category='error')
 
         next_url = request.headers.get('source_url', request.url)
         path = urlparse(next_url)[2]
