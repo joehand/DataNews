@@ -81,8 +81,7 @@ def item(id=None,title=None):
 
     commentForm = CommentForm(request.values, kind="comment")
 
-    if request.args.get('edit', False) and item_obj.kind == 'comment'\
-         and current_user.id == item_obj.user_id:
+    if request.args.get('edit', False) and current_user.id == item_obj.user_id:
         commentForm.text.data = markdownify(item_obj.text)
         commentForm.edit.data = True
 
