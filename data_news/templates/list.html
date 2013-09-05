@@ -21,7 +21,7 @@
             {% endif %}
             <div class="row post-list">
             {% for item in items.items %}
-                <div class="col-lg-offset-1 col-lg-11 col-md-12 col-sm-offset-1 col-sm-11 col-xs-12">
+                <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
                 {% if item.kind == 'post' %}
                     {% include "_post.html" %}
                 {% elif item.kind == 'comment' %}
@@ -33,7 +33,7 @@
 
             {% if items.has_next %}
             <div class="row next">
-                <div class="col-lg-offset-1 col-md-offset-1  col-sm-offset-1">
+                <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
                 {% if "/items" in request.path  %}
                 <a href="{{ url_for('items', page = items.next_num, **filters) }}" data-pjax>More</a>
                 {% else %}

@@ -3,7 +3,7 @@
 
 {%- block content %}
             <div class="row">
-              <div class="col-lg-offset-1 col-lg-8 col-md-9 col-md-offset-1 col-sm-offset-1 col-sm-11 col-xs-12">
+              <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
             {% set item_page = True %}
             {% if item.kind == 'post' %}
               {% include "_post.html" %}
@@ -17,7 +17,7 @@
 
 
             <div class="row">
-              <div class="col-lg-offset-1 col-lg-8 col-md-9 col-md-offset-1 col-sm-offset-1 col-sm-11 col-xs-12">
+              <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
               {% if current_user.id %}
                 {% include "_comment_form.html" %}
               {% else %}
@@ -33,7 +33,7 @@
 
             {% if not edit %}
             {%- for comment in item.get_children() -%}
-              {% set depth = comment[1] %}
+              {% set depth = comment[1] - 1 %}
               {% set comment = comment[0] %}
             <div class="row">
               {% include "_comment.html" %}

@@ -80,7 +80,6 @@ body {
 }
 
 .next {
-    padding-left:15px;
 }
 
 /* Comment Form and Input */
@@ -135,7 +134,7 @@ textarea.comment-input:active,
     margin:15px 0;
 }
 
-@media (max-width: 768px) { 
+@media (max-width: 767px) { 
     .navbar-nav>li.active a {
         border-bottom:0px;
         padding-bottom:10px;
