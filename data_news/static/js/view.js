@@ -149,8 +149,15 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
             // Also need to re-init any child views.
 
             var self = this;
+
             //Init the pjax for links
             $(document).pjax('a[data-pjax]', self.id);
+            
+            $(document).on('pjax:timeout', function(event) {
+                // Prevent default timeout redirection behavior
+                console.log('timeout');
+                event.preventDefault();
+            });
 
             //Init the pjax for forms
             $(document).on('submit', 'form[data-pjax]', function(event) {
@@ -162,6 +169,7 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
             });
 
             self.$el.on('pjax:end', function(e, xhr, pj) {
+                console.log('pjax end')
                 self.itemViews = []; // Clear old Item views
                 self.initAllItems(); // Make new ones!
 
