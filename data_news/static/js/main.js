@@ -10,7 +10,7 @@ define([
     'view',
     'bootstrap',
     'pjax'
-], function(Backbone, _, $, AppModel, AppView) {
+], function (Backbone, _, $, AppModel, AppView) {
     
     var appView = new AppView();
     var appModel = new AppModel();
