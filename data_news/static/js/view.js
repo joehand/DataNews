@@ -152,7 +152,7 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
 
             //Init the pjax for links
             $(document).pjax('a[data-pjax]', self.id);
-            
+
             $(document).on('pjax:timeout', function(event) {
                 // Prevent default timeout redirection behavior
                 console.log('timeout');
@@ -184,6 +184,12 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
                 if (pj.type == 'POST') {
                     self.highlightComment()
                 }
+            });
+
+            //Send google our new page info
+            $(document).on('pjax:complete', function() {
+                ga('set', 'location', window.location.href);
+                ga('send', 'pageview');
             });
         },
 
