@@ -168,10 +168,29 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
                 xhr.setRequestHeader('source_url', document.URL);
             });
 
+
+            $(document).on('pjax:complete', function(e, xhr, pj) {
+                console.log('complete');
+                console.log(e, xhr, pj);
+            });
+
+
+            $(document).on('pjax:success', function(e, xhr, pj) {
+                console.log('success');
+                console.log(e, xhr, pj);
+            });
+
+
+            self.$el.on('pjax:start', function(e, xhr, pj) {
+                console.log('pjax start')
+                self.toggleLoading();
+            });
+
             self.$el.on('pjax:end', function(e, xhr, pj) {
                 console.log('pjax end')
                 self.itemViews = []; // Clear old Item views
                 self.initAllItems(); // Make new ones!
+                self.toggleLoading();
 
                 var $link_parent = $(e.relatedTarget).parent()
                 if ($link_parent.hasClass('pjax-active')) {
@@ -188,9 +207,24 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
 
             //Send google our new page info
             $(document).on('pjax:complete', function() {
-                ga('set', 'location', window.location.href);
-                ga('send', 'pageview');
+                if (typeof ga != "undefined") {
+                    ga('set', 'location', window.location.href);
+                    ga('send', 'pageview');
+                }
             });
+        },
+
+        toggleLoading: function() {
+            var $el = $('#main-container');
+
+            if ($el.hasClass('loading')) {
+                $el.animate({'opacity': '1'}, 200);
+            } else {
+                $el.animate({'opacity': '0'}, 200);
+            }
+
+            $el.toggleClass('loading');
+
         },
 
         initItem: function(el) {
