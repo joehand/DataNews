@@ -110,10 +110,10 @@ def item(id=None,title=None):
                         item = item_obj, form = commentForm, title=item_obj.title, edit=True))
 
             if item_obj.kind == 'page':
-                next_url = url_for('item', title=item_obj, title, edit=True)
+                next_url = url_for('item', title=item_obj.title, edit=True)
             else: 
                 next_url = url_for('item', id=item_obj.id, edit=True)
-                
+
             response.headers['X-PJAX-URL'] = next_url
             return response
         
