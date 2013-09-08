@@ -55,7 +55,7 @@ def before_request():
     elif session.get('visited_index', False):
         session['return_anon'] = True
     g.search_form = SearchForm()
-    g.pages = Item.query.filter_by(kind='page')
+    g.pages = Item.query.filter_by(kind='page').order_by(Item.title)
 
 @app.route('/')
 @app.route('/<int:page>')
