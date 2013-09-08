@@ -14,14 +14,18 @@ from forms import PostForm, CommentForm, UserForm, SearchForm
 md = Markdown()
 allowed_tags = ['a', 'p','em','strong','code','pre','blockquote','ul','li','ol']
 super_tags = ['a', 'p','em','strong','code','pre','blockquote','ul','li','ol','h3','h4','h5','h6','img']
+
+def clean_text(text):
+    if current_user.is_super:
+        return clean(md.convert(text), super_tags)
+    else:
+        return clean(md.convert(text), allowed_tags)
+
 def submit_item(url=None, title=None, text=None, 
                     kind='comment', parent_id=None):
     """ Submits an item (post or comment) to db
     """ 
-    if current_user.is_super:
-        text = clean(md.convert(text), super_tags)
-    else:
-        text = clean(md.convert(text), allowed_tags)
+    text = clean_text(text)
 
     if kind=='comment' and not parent_id:
         return None
@@ -97,7 +101,7 @@ def item(id=None,title=None):
 
     if commentForm.validate_on_submit():
         if commentForm.edit.data:
-            item_obj.text = clean(md.convert(commentForm.text.data), allowed_tags)
+            item_obj.text = clean_text(commentForm.text.data)
             item_obj = db.session.merge(item_obj)
             db.session.commit()
 
@@ -105,7 +109,12 @@ def item(id=None,title=None):
             response = make_response(render_template('item.html',
                         item = item_obj, form = commentForm, title=item_obj.title, edit=True))
 
-            response.headers['X-PJAX-URL'] = url_for('item', id=item_obj.id, edit=True)
+            if item_obj.kind == 'page':
+                next_url = url_for('item', title=item_obj, title, edit=True)
+            else: 
+                next_url = url_for('item', id=item_obj.id, edit=True)
+                
+            response.headers['X-PJAX-URL'] = next_url
             return response
         
         comment = submit_item(text=commentForm.text.data, parent_id=item_obj.id)
