@@ -1,7 +1,7 @@
 <div class="item post" id="item-{{item.id}}" data-id="{{item.id}}" data-user="{{item.user.id}}">
     <div class="row post-title">
         <h4>
-            {% include "_vote.html" %}
+            {%- include "_vote.html" -%}
             <a href="{{item.url}}" data-pjax>{{item.title|safe}}</a> 
             <small class="text-muted">({{get_domain(item.url)}})</small>
         </h4>
@@ -11,9 +11,9 @@
         <span>{{pretty_date(item.timestamp)}}</span> | 
         <span><a href="{{url_for('item', id=item.id)}}" data-pjax>{{item.get_children()|length}} comments</a></span></p>
     </div>
-    {% if item_page %}
+    {%- if item_page %}
         <div class="row post-text">
             {{item.text|safe|urlize}}
         </div>
-    {% endif %}
+    {% endif -%}
 </div>

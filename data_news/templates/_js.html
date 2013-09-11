@@ -1,4 +1,3 @@
-    
     <script>
         {% if current_user.id %}
         var currentUser = {{current_user.id}};
@@ -7,7 +6,7 @@
         {% endif %}
     </script>
 
-    {% if config['HEROKU_PROD'] %}
+    {%- if config['HEROKU_PROD'] %}
     <script data-main="{{ url_for('static', filename='js/app.min')}}" src="{{ url_for('static', filename='js/require.js')}}"></script>
     <script>
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
@@ -20,4 +19,4 @@
     </script>
     {% else %}
     <script data-main="{{ url_for('static', filename='js/app')}}" src="{{ url_for('static', filename='js/require.js')}}"></script>
-    {% endif %}
+    {% endif -%}

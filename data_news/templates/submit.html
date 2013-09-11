@@ -1,7 +1,7 @@
 {% extends "_base.html" %}
 {% import "bootstrap_wtf.html" as wtf %}
 
-{%- block content %}
+{%- block content -%}
         <div class="row">
           <h1>Submit Post</h1>
           <p>Rather not fill out a form? <a href="{{url_for('item', title='submit_via_twitter')}}">Submit via Twitter!</a></p><br/>
@@ -9,15 +9,12 @@
         <div class="row">
             <form class="form form-horizontal" method="post" action="{{request.url}}">
               {{ form.hidden_tag() }}
-
               {{ wtf.horizontal_field(form.url, autofocus=autofocus) }}
               {{ wtf.horizontal_field(form.title) }}
               {{ wtf.horizontal_field(form.text) }}
-              {% if current_user.is_super %}
+              {%- if current_user.is_super %}
               {{ wtf.horizontal_field(form.kind) }}
-              {% endif %}
-
-
+              {% endif -%}
               <div class="form-group">
                 <div class="col-md-offset-2 col-md-10 col-lg-offset-2 col-lg-10">
                   <button name="action_save" type="submit" class="btn btn-primary">Submit</button>

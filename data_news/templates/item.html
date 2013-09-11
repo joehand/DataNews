@@ -2,42 +2,39 @@
 {% import "bootstrap_wtf.html" as wtf %}
 
 {%- block content %}
-            <div class="row">
-              <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
-            {% set item_page = True %}
-            {% if item.kind == 'post' %}
-              {% include "_post.html" %}
-            {% elif item.kind == 'page' %}
-              {% include "_page.html" %}
-            {% elif item.kind == 'comment' %}
-              {% include "_comment.html" %}
-            {% endif %}
-              </div>
-            </div>
-
-
-            <div class="row">
-              <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
-              {% if current_user.id %}
-                {% include "_comment_form.html" %}
-              {% else %}
-              <div class="panel panel-default">
-                <div class="panel-body">
-                <p><a class="alert-link" href="{{url_for("security.login")}}">Login</a> or <a class="alert-link" href="{{url_for("security.register")}}">register</a> to comment.</p>
-                </div>
-              </div>
-              {% endif %}
-              </div>
-            {% set item_page = False %}
-            </div>
-
-            {% if not edit %}
-            {%- for comment in item.get_children() -%}
-              {% set depth = comment[1] - 1 %}
-              {% set comment = comment[0] %}
-            <div class="row">
-              {% include "_comment.html" %}
-            </div>
-            {%- endfor %}
-            {% endif %}
+<div class="row">
+    <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
+    {% set item_page = True %}
+    {%- if item.kind == 'post' %}
+    {% include "_post.html" %}
+    {% elif item.kind == 'page' %}
+    {% include "_page.html" %}
+    {% elif item.kind == 'comment' %}
+    {% include "_comment.html" %}
+    {% endif -%}
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
+    {%- if current_user.id %}
+    {% include "_comment_form.html" %}
+    {% else %}
+    <div class="panel panel-default">
+        <div class="panel-body">
+            <p><a class="alert-link" href="{{url_for("security.login")}}">Login</a> or <a class="alert-link" href="{{url_for("security.register")}}">register</a> to comment.</p>
+        </div>
+    </div>
+    {% endif -%}
+    </div>
+</div>
+{%- set item_page = False -%}
+{%- if not edit %}
+{%- for comment in item.get_children() -%}
+  {% set depth = comment[1] - 1 %}
+  {% set comment = comment[0] %}
+<div class="row">
+  {%- include "_comment.html" %}
+</div>
+{%- endfor %}
+{% endif -%}
 {% endblock -%}

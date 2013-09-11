@@ -2,36 +2,35 @@
 
 {% block title %}Home {% endblock title %}
 
-{% block content %}
-            {% if query %}
+{%- block content -%}
+            {%- if query %}
             searching for: {{query}}
-            {% endif %}
-            {% if current_user.is_anonymous() and not session.return_anon %}
+            {% endif -%}
+            {%- if current_user.is_anonymous() and not session.return_anon %}
             <div class="row welcome-msg">
                 {% include "_welcome.html" %}
             </div>
-            {% endif %}
+            {% endif -%}
             <div class="row post-list">
-            {% for item in items.items %}
+            {%- for item in items.items %}
                 <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
-                {% if item.kind == 'post' %}
+                {%- if item.kind == 'post' %}
                     {% include "_post.html" %}
                 {% elif item.kind == 'comment' %}
                     {% include "_comment.html" %}
-                {% endif %}
+                {% endif -%}
                 </div>
-            {% endfor %}
+            {% endfor -%}
             </div>
-
-            {% if items.has_next %}
+            {%- if items.has_next %}
             <div class="row next">
                 <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
-                {% if "/items" in request.path  %}
+                {%- if "/items" in request.path  %}
                 <a href="{{ url_for('items', page = items.next_num, **filters) }}" data-pjax>More</a>
                 {% else %}
                 <a href="{{ url_for('index', page = items.next_num) }}" data-pjax>More</a>
-                {% endif %}
+                {% endif -%}
             </div>
             </div>
-            {% endif %}
+            {% endif -%}
 {% endblock %}
