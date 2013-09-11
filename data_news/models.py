@@ -240,6 +240,10 @@ class Item(db.Model):
 
     @classmethod
     def find_by_title(cls, title, kind='page'):
+        """ Find a page by title
+            Replace _ with spaces. Used to make nice URLs
+        """
+        title = title.replace('_', ' ')
         item_query = cls.query.filter_by(kind=kind).filter(
                     func.lower(cls.title) == func.lower(title))
         return item_query

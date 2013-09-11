@@ -2,7 +2,7 @@
   {% if request.path[1:] == title.lower() %} 
     {% set cls='active' %}
   {% endif %}
-  <li class='{{cls}} pjax-active'><a href="{{url_for('item', title=title.lower())}}" data-pjax>{{title}}</a></li>
+  <li class='{{cls}} pjax-active'><a href="{{url_for('item', title=title.lower().replace(' ', '_'))}}" data-pjax>{{title}}</a></li>
 {% endmacro %}
 
 <footer class="site-footer row">
