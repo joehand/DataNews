@@ -8,15 +8,7 @@
             {% endif %}
             {% if current_user.is_anonymous() and not session.return_anon %}
             <div class="row welcome-msg">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        <h3>Welcome to DataNews!</h3>
-                    </div>
-                    <div class="panel-body">
-                        <p><strong>DataNews.co</strong> is a place to discuss the latest news in data visualization <i class="icon-bar-chart"></i>, open data resources <i class="icon-hdd"></i>, general quantified knowledge <i class="icon-dashboard"></i>, and other fun things... <i class="icon-coffee"></i> <i class="icon-beer"></i> <i class="icon-rocket"></i></p>
-                        <p><a href="{{url_for('security.register')}}" class="btn btn-sm btn-primary" data-pjax>Register Now</a></p>
-                    </div>
-                </div>
+                {% include "_welcome.html" %}
             </div>
             {% endif %}
             <div class="row post-list">
