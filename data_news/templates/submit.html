@@ -1,5 +1,5 @@
 {% extends "_base.html" %}
-{% import "bootstrap_wtf.html" as wtf %}
+{% import "_wtf.html" as wtf %}
 
 {%- block content -%}
         <div class="row">
@@ -9,11 +9,11 @@
         <div class="row">
             <form class="form form-horizontal" method="post" action="{{request.url}}">
               {{ form.hidden_tag() }}
-              {{ wtf.horizontal_field(form.url, autofocus=autofocus) }}
-              {{ wtf.horizontal_field(form.title) }}
-              {{ wtf.horizontal_field(form.text) }}
+              {{ wtf.regular_field(form.url, autofocus=autofocus) }}
+              {{ wtf.regular_field(form.title) }}
+              {{ wtf.regular_field(form.text) }}
               {%- if current_user.is_super %}
-              {{ wtf.horizontal_field(form.kind) }}
+              {{ wtf.regular_field(form.kind) }}
               {% endif -%}
               <div class="form-group">
                 <div class="col-md-offset-2 col-md-10 col-lg-offset-2 col-lg-10">

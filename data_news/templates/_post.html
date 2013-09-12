@@ -9,11 +9,16 @@
     <div class="row post-info">
         <p><span class="vote-count"><b>{{item.votes|length}}</b></span> | From <a href="{{url_for('user', name=item.user.name)}}" data-pjax>{{item.user.name}}</a>
         <span>{{pretty_date(item.timestamp)}}</span> | 
-        <span><a href="{{url_for('item', id=item.id)}}" data-pjax>{{item.get_children()|length}} comments</a></span></p>
+        <span><a href="{{url_for('item', id=item.id)}}" data-pjax>{{item.get_children()|length}} comments</a></span>
+        {%- if current_user.id and item.user_id == current_user.id and not edit %}
+            | <a href="{{url_for('item_edit', id=item.id)}}" data-pjax>Edit</a>
+        {% endif -%}
+        </p>
     </div>
     {%- if item_page %}
         <div class="row post-text">
             {{item.text|safe|urlize}}
         </div>
     {% endif -%}
+
 </div>

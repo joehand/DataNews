@@ -1,5 +1,7 @@
-{% import "bootstrap_wtf.html" as wtf %}
-{%- if item.kind == 'page' -%}
+{% import "_wtf.html" as wtf %}
+{%- if edit -%}
+{% set form_url = url_for('item_edit', id=item.id) %}
+{%- elif item.kind == 'page' -%}
 {% set form_url = url_for('page', title=item.title.lower()) %}
 {% else %}
 {% set form_url = url_for('item', id=item.id) %}
@@ -12,10 +14,10 @@
   {% else %}
   {{ wtf.comment_field(form.text) }}
   {% endif -%}
-  {{ wtf.inline_field(form.kind) }}
-  {{ wtf.inline_field(form.parent_id, value=item.id) }}
+  {{ wtf.wtf_field(form.kind) }}
+  {{ wtf.wtf_field(form.parent_id, value=item.id) }}
   {%- if edit %}
-  {{ wtf.inline_field(form.edit, value=True) }}
+  {{ wtf.wtf_field(form.edit, value=True) }}
   {% endif -%}
   <div class="form-group submit">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
