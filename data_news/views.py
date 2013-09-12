@@ -16,12 +16,6 @@ md = Markdown()
 allowed_tags = ['a', 'p','em','strong','code','pre','blockquote','ul','li','ol']
 super_tags = ['a', 'p','em','strong','code','pre','blockquote','ul','li','ol','h3','h4','h5','h6','img']
 
-def clean_text(text):
-    if current_user.is_super:
-        return clean(md.convert(text), super_tags)
-    else:
-        return clean(md.convert(text), allowed_tags)
-
 
 @app.before_request
 def before_request():
@@ -44,12 +38,17 @@ class ItemView(FlaskView):
     def _commentForm(self, request):
         return CommentForm(request.values, kind="comment")
 
+    def _clean_text(self, text):
+        if current_user.is_super:
+            return clean(md.convert(text), super_tags)
+        else:
+            return clean(md.convert(text), allowed_tags)
 
     def _submit_item(self, url=None, title=None, text=None, 
                             kind='comment', parent_id=None):
         """ Submits an item (post or comment) to db
         """ 
-        text = clean_text(text)
+        text = self._clean_text(text)
 
         if kind=='comment' and not parent_id:
             return None
@@ -85,7 +84,7 @@ class ItemView(FlaskView):
             Form is used to comment on that post or comment
             TODO: Make form a part of this class?
         """
-        item = Item.query.get_or_404(id)
+        item = Item.query.options(db.subqueryload_all('children.children')).get_or_404(id)
         commentForm = self._commentForm(request)
         return render_template('item.html',
             item = item, form = commentForm, title=item.title)
@@ -126,7 +125,11 @@ class ItemView(FlaskView):
 
 
     @route('/item/edit/<int:id>', endpoint='item_edit')
+    @login_required  #change to user = owner
     def get_edit(self, id):
+        """ Get route for Editing an Item
+            TODO: Make decorator for "owership" of item
+        """
         item = Item.query.get_or_404(id)
         if current_user.id == item.user_id:
             commentForm = self._commentForm(request)
@@ -165,6 +168,8 @@ class ItemView(FlaskView):
     @route('/submit', methods=['POST'])
     @login_required
     def post_submit(self):
+        """ Post route for submitting
+        """
         form = PostForm(request.values, kind="post")
         if form.validate_on_submit():
             post = Item.query.filter_by(url = form.url.data).first()
@@ -189,6 +194,68 @@ class ItemView(FlaskView):
         else:
             return render_template('submit.html', form=form, title='Submit')
 
+    @route('/item/<int:id>', methods=['POST'])
+    @route('/<title>', methods=['POST'])
+    @login_required
+    def post_item_comment(self, id=None, title=None):
+        commentForm = self._commentForm(request)
+        if not id:
+            id = Item.find_by_title(title).first_or_404().id
+        if commentForm.validate_on_submit():
+            comment = self._submit_item(text=commentForm.text.data, parent_id=id)
+
+            if comment.id and comment.parent_id:
+                flash('Thanks for adding to the discussion!', category = 'success')
+            else:
+                flash('Something went wrong adding your comment. Please try again', category='error')
+
+            next_url = request.headers.get('source_url', request.url)
+            path = urlparse(next_url)[2]
+            next_id = path[path.rfind('/') + 1:]
+            next_url = path + '#item-' + str(comment.id)
+
+            #Redefine the items to pass to template for PJAX
+            if 'item' in path:
+                item = Item.query.get_or_404(next_id)
+            else: 
+                item = Item.find_by_title(next_id).first_or_404()
+            commentForm = self._commentForm(request)
+            commentForm.text.data = '' #form data isn't clearing, so do it manually
+
+            response = make_response(render_template('item.html',
+                                    item = item, form = commentForm, title=item.title))
+
+            response.headers['X-PJAX-URL'] = next_url
+            return response
+        else:
+            return render_template('submit.html', form=form, title='Submit')
+
+
+
+    @route('/item/edit/<int:id>', methods=['POST'])
+    @login_required #change to user = owner
+    def post_edit(self, id):
+        """ Post Route for Edit an item
+            TODO: Ability to edit title/url for posts
+        """
+        commentForm = self._commentForm(request)
+        item = Item.query.get_or_404(id)
+        if commentForm.validate_on_submit():
+            item.text = self._clean_text(commentForm.text.data)
+            item = db.session.merge(item)
+            db.session.commit()
+
+            flash('Edit saved', 'info')
+            response = make_response(render_template('item.html',
+                        item = item, form = commentForm, title=item.title, edit=True))
+            next_url = url_for('item_edit', id=item.id)
+
+            response.headers['X-PJAX-URL'] = next_url
+            return response
+        else:
+            return render_template('item.html',
+                        item = item, form = commentForm, title=item.title, edit=True)
+
 ItemView.register(app)
 
 
@@ -197,22 +264,6 @@ ItemView.register(app)
 @app.route('/item2/<int:id>', methods = ['GET', 'POST'])
 def page2(id=None,title=None):
     if commentForm.validate_on_submit():
-        if commentForm.edit.data:
-            item_obj.text = clean_text(commentForm.text.data)
-            item_obj = db.session.merge(item_obj)
-            db.session.commit()
-
-            flash('Edit saved', 'info')
-            response = make_response(render_template('item.html',
-                        item = item_obj, form = commentForm, title=item_obj.title, edit=True))
-
-            if item_obj.kind == 'page':
-                next_url = url_for('item', title=item_obj.title, edit=True)
-            else: 
-                next_url = url_for('item', id=item_obj.id, edit=True)
-
-            response.headers['X-PJAX-URL'] = next_url
-            return response
         
         comment = submit_item(text=commentForm.text.data, parent_id=item_obj.id)
 
@@ -239,19 +290,6 @@ def page2(id=None,title=None):
 
         response.headers['X-PJAX-URL'] = next_url
         return response
-
-
-
-@app.route('/submit', methods = ['GET', 'POST'])
-@login_required
-def submit1():
-    """ Submit a new post!
-
-        TODO?: Where should I redirect to after this?
-    """
-    form = PostForm(request.values, kind="post")
-   
-    return render_template('submit.html', form=form, title='Submit')
 
 
 class UserView(FlaskView):
