@@ -22,27 +22,6 @@ def clean_text(text):
     else:
         return clean(md.convert(text), allowed_tags)
 
-def submit_item(url=None, title=None, text=None, 
-                    kind='comment', parent_id=None):
-    """ Submits an item (post or comment) to db
-    """ 
-    text = clean_text(text)
-
-    if kind=='comment' and not parent_id:
-        return None
-
-    item = Item(url = url,
-                title = title,
-                text = text,
-                kind = kind,
-                parent_id = parent_id,
-                timestamp = datetime.utcnow(),
-                user_id = current_user.id)
-
-    db.session.add(item)
-    db.session.commit()
-
-    return item
 
 @app.before_request
 def before_request():
@@ -62,6 +41,32 @@ def before_request():
 class ItemView(FlaskView):
     route_base = '/'
 
+    def _commentForm(self, request):
+        return CommentForm(request.values, kind="comment")
+
+
+    def _submit_item(self, url=None, title=None, text=None, 
+                            kind='comment', parent_id=None):
+        """ Submits an item (post or comment) to db
+        """ 
+        text = clean_text(text)
+
+        if kind=='comment' and not parent_id:
+            return None
+
+        item = Item(url = url,
+                    title = title,
+                    text = text,
+                    kind = kind,
+                    parent_id = parent_id,
+                    timestamp = datetime.utcnow(),
+                    user_id = current_user.id)
+
+        db.session.add(item)
+        db.session.commit()
+
+        return item
+
     @route('/', endpoint='index')
     @route('/<int:page>')
     def index(self, page=1):
@@ -75,28 +80,114 @@ class ItemView(FlaskView):
             items = posts)
 
     @route('/item/<int:id>', endpoint='item')
-    def get(self, id):
+    def get_item(self, id):
         """ View for a singular item (post or comment)
             Form is used to comment on that post or comment
             TODO: Make form a part of this class?
         """
-        item_obj = Item.query.get_or_404(id)
-        commentForm = CommentForm(request.values, kind="comment")
+        item = Item.query.get_or_404(id)
+        commentForm = self._commentForm(request)
         return render_template('item.html',
-            item = item_obj, form = commentForm, title=item_obj.title)
+            item = item, form = commentForm, title=item.title)
 
     @route('/<title>', endpoint='page')
     def get_page(self, title):
         """ View for a singular page (similar to item view but uses title)
             Form is used to comment on that post or comment
         """
-        item_obj = Item.find_by_title(title).first_or_404()
-        commentForm = CommentForm(request.values, kind="comment")
+        page = Item.find_by_title(title).first_or_404()
+        commentForm = self._commentForm(request)
         return render_template('item.html',
-            item = item_obj, form = commentForm, title=item_obj.title)
+            item = page, form = commentForm, title=page.title)
 
-    def post(self, id):
-        return 'hello'
+    @route('/items', endpoint='items')
+    @route('/items/<int:page>')
+    def get_items(self, page = 1):
+        """ Returns a sequential list of posts
+            Add optional filters (used to get a user posts/comments)
+
+            TODO: Change sort order via request args
+        """
+        filters = {}
+        if request.args:
+            for key, val in request.args.iteritems():
+                filters[key] = val
+            if 'name' in filters:
+                filters['user_id'] = User.find_user_by_name(request.args['name']).first().id
+                filters.pop('name')
+
+            if '_pjax' in filters:
+                filters.pop('_pjax')
+
+            items_obj = Item.query.order_by(Item.timestamp.desc()).filter_by(**filters).paginate(page)
+        else:
+            items_obj = Item.query.order_by(Item.timestamp.desc()).paginate(page)
+        return render_template('list.html', items=items_obj, filters=filters)
+
+
+    @route('/item/edit/<int:id>', endpoint='item_edit')
+    def get_edit(self, id):
+        item = Item.query.get_or_404(id)
+        if current_user.id == item.user_id:
+            commentForm = self._commentForm(request)
+            commentForm.text.data = markdownify(item.text)
+            commentForm.edit.data = True
+
+            return render_template('item.html',
+                item = item, form = commentForm, title=item.title, edit=True)
+        else:
+            return redirect(url_for('item', id=id))
+
+
+    @route('/reply/<int:id>', endpoint='item_comment')
+    def get_comment_form(self, id):
+        """
+            Get only the comment reply form and return via JSON
+            Requires the right header to be set (via js)
+        """
+        if request.headers.get('formJSON', False):
+            item = Item.query.get_or_404(id)
+            commentForm = self._commentForm(request)
+            return jsonify(html = render_template('_comment_form.html',
+                        item = item, form = commentForm))
+        else:
+            return redirect(url_for('item', id=id))
+
+    @route('/submit', endpoint='submit')
+    @login_required
+    def get_submit(self):
+        """ Submit a new post!
+        """
+        form = PostForm(request.values, kind="post")
+        return render_template('submit.html', form=form, title='Submit')
+
+
+    @route('/submit', methods=['POST'])
+    @login_required
+    def post_submit(self):
+        form = PostForm(request.values, kind="post")
+        if form.validate_on_submit():
+            post = Item.query.filter_by(url = form.url.data).first()
+
+            if post:
+                flash('URL already submitted', category = 'warning')
+                return redirect(url_for('item', id=post.id))
+
+            if current_user.is_super and form.kind.data:
+                kind = form.kind.data
+            else:
+                kind = 'post'
+
+            post = self._submit_item(url = form.url.data,
+                               title = form.title.data, 
+                               text = form.text.data,
+                               kind = kind)
+
+            flash('Thanks for the submission!', category = 'success')
+
+            return redirect(url_for('index'))
+        else:
+            return render_template('submit.html', form=form, title='Submit')
 
 ItemView.register(app)
 
@@ -105,18 +196,6 @@ ItemView.register(app)
 @app.route('/title/<title>', methods = ['GET', 'POST'])
 @app.route('/item2/<int:id>', methods = ['GET', 'POST'])
 def page2(id=None,title=None):
-    if request.args.get('edit', False) and current_user.id == item_obj.user_id:
-        commentForm.text.data = markdownify(item_obj.text)
-        commentForm.edit.data = True
-
-        return render_template('item.html',
-                item = item_obj, form = commentForm, title=item_obj.title, edit=True)
-
-    if request.method == 'GET' and request.headers.get('formJSON', False):
-        #Get only the comment reply form and return via JSON
-        return jsonify(html = render_template('_comment_form.html',
-        item = item_obj, form = commentForm))
-
     if commentForm.validate_on_submit():
         if commentForm.edit.data:
             item_obj.text = clean_text(commentForm.text.data)
@@ -162,58 +241,16 @@ def page2(id=None,title=None):
         return response
 
 
-@app.route('/items')
-@app.route('/items/<int:page>')
-def items(page = 1):
-    """ Returns a sequential list of posts
-        Add optional filters (used to get a user posts/comments)
-
-        TODO: Change sort order via request args
-    """
-    filters = {}
-    if request.args:
-        for key, val in request.args.iteritems():
-            filters[key] = val
-        if 'name' in filters:
-            filters['user_id'] = User.find_user_by_name(request.args['name']).first().id
-            filters.pop('name')
-
-        if '_pjax' in filters:
-            filters.pop('_pjax')
-
-        items_obj = Item.query.order_by(Item.timestamp.desc()).filter_by(**filters).paginate(page)
-    else:
-        items_obj = Item.query.order_by(Item.timestamp.desc()).paginate(page)
-    return render_template('list.html', items=items_obj, filters=filters)
 
 @app.route('/submit', methods = ['GET', 'POST'])
 @login_required
-def submit():
+def submit1():
     """ Submit a new post!
 
         TODO?: Where should I redirect to after this?
     """
     form = PostForm(request.values, kind="post")
-    if form.validate_on_submit():
-        post = Item.query.filter_by(url = form.url.data).first()
-
-        if post:
-            flash('URL already submitted', category = 'warning')
-            return redirect(url_for('item', id=post.id))
-
-        if current_user.is_super and form.kind.data:
-            kind = form.kind.data
-        else:
-            kind = 'post'
-
-        post = submit_item(url = form.url.data,
-                           title = form.title.data, 
-                           text = form.text.data,
-                           kind = kind)
-
-        flash('Thanks for the submission!', category = 'success')
-
-        return redirect(url_for('index'))
+   
     return render_template('submit.html', form=form, title='Submit')
 
 
