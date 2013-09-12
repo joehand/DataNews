@@ -2,6 +2,7 @@ from data_news import app, db
 from flask import render_template, request, flash, abort, \
                  redirect, url_for, jsonify, session, make_response, g
 from flask.ext.security import login_required, current_user
+from flask.ext.classy import FlaskView, route
 from urlparse import urlparse
 from datetime import datetime
 from markdown import Markdown
@@ -57,36 +58,53 @@ def before_request():
     g.search_form = SearchForm()
     g.pages = Item.query.filter_by(kind='page').order_by(Item.title)
 
-@app.route('/')
-@app.route('/<int:page>')
-def index(page = 1):
-    """ Our main index view.
-        Returns the top 20 ranked posts and paginates if necessary
 
-        TODO: More awesomeness!
-    """
-    posts = Item.ranked_posts(page)
-    return render_template('list.html',
-        items = posts)
+class ItemView(FlaskView):
+    route_base = '/'
 
+    @route('/', endpoint='index')
+    @route('/<int:page>')
+    def index(self, page=1):
+        """ Our main index view.
+            Returns the top 20 ranked posts and paginates if necessary
 
-@app.route('/<title>', methods = ['GET', 'POST'])
-@app.route('/item/<int:id>', methods = ['GET', 'POST'])
-def item(id=None,title=None):
-    """ View for a singular item (post or comment)
-        Form is used to comment on that post or comment
+            TODO: More awesomeness!
+        """
+        posts = Item.ranked_posts(page)
+        return render_template('list.html',
+            items = posts)
 
-        Redirection is kinda weak right now. 
-            Its better now but the comment form is not clearing.
-            Also pjax doesn't scroll to #item-id
-    """
-    if id == None:
-        item_obj = Item.find_by_title(title).first_or_404()
-    else:
+    @route('/item/<int:id>', endpoint='item')
+    def get(self, id):
+        """ View for a singular item (post or comment)
+            Form is used to comment on that post or comment
+            TODO: Make form a part of this class?
+        """
         item_obj = Item.query.get_or_404(id)
+        commentForm = CommentForm(request.values, kind="comment")
+        return render_template('item.html',
+            item = item_obj, form = commentForm, title=item_obj.title)
 
-    commentForm = CommentForm(request.values, kind="comment")
+    @route('/<title>', endpoint='page')
+    def get_page(self, title):
+        """ View for a singular page (similar to item view but uses title)
+            Form is used to comment on that post or comment
+        """
+        item_obj = Item.find_by_title(title).first_or_404()
+        commentForm = CommentForm(request.values, kind="comment")
+        return render_template('item.html',
+            item = item_obj, form = commentForm, title=item_obj.title)
 
+    def post(self, id):
+        return 'hello'
+
+ItemView.register(app)
+
+
+
+@app.route('/title/<title>', methods = ['GET', 'POST'])
+@app.route('/item2/<int:id>', methods = ['GET', 'POST'])
+def page2(id=None,title=None):
     if request.args.get('edit', False) and current_user.id == item_obj.user_id:
         commentForm.text.data = markdownify(item_obj.text)
         commentForm.edit.data = True
@@ -142,9 +160,6 @@ def item(id=None,title=None):
 
         response.headers['X-PJAX-URL'] = next_url
         return response
-
-    return render_template('item.html',
-        item = item_obj, form = commentForm, title=item_obj.title)
 
 
 @app.route('/items')
@@ -202,26 +217,40 @@ def submit():
     return render_template('submit.html', form=form, title='Submit')
 
 
-@app.route('/user/<name>', methods = ['GET', 'POST'])
-def user(name):
+class UserView(FlaskView):
     """ Get the beautiful user page
         Also a user can edit their own info here
         TODO: Add about section? And gravatar option?
               If we do more complex stuff, 
               allow use to see 'public' profile via request arg
+        TODO: Clean up user index & make userful
     """
-    user = User.find_user_by_name(name).first_or_404()
-    if user == current_user:
+    @route('/')
+    @route('/<int:page>')
+    def index(self, page=1):
+        users_obj = User.query.paginate(page)
+        return render_template('list.html', items=users_obj)
+
+    @route('/<name>', endpoint='user')
+    def get(self, name):
+        user = User.find_user_by_name(name).first_or_404()
+        if user == current_user:
+            form = UserForm()
+            return render_template('user.html', user=user, form=form, title=user.name)
+        return render_template('user.html', user=user, title=user.name)
+
+    def post(self, name):
+        user = User.find_user_by_name(name).first_or_404()
         form = UserForm()
-        if form.validate_on_submit():    
+        if user == current_user and form.validate_on_submit():    
             user.email = form.email.data
             user.name = form.name.data
             user.twitter_handle = form.twitter.data
             db.session.commit()
             flash('Your edits are saved, thanks.', category = 'info')
             return redirect(url_for('user', name=form.name.data)) 
-        return render_template('user.html', user=user, form=form, title=user.name)
-    return render_template('user.html', user=user, title=user.name)
+
+UserView.register(app)
 
 
 @app.route('/search', methods = ['GET', 'POST'])

@@ -18,6 +18,8 @@
                     {% include "_post.html" %}
                 {% elif item.kind == 'comment' %}
                     {% include "_comment.html" %}
+                {% elif item.__tablename__ == 'user' %}
+                    {% include "_user.html" %}
                 {% endif -%}
                 </div>
             {% endfor -%}
