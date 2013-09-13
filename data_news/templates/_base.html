@@ -18,10 +18,18 @@
 {%- if "X-PJAX" not in request.headers %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="{% block description %}{{description}}{% endblock description %}">
-    <meta name="author" content="{% block author %}{{author}}{% endblock author %}">
+    <meta name="author" content="{% block author %}DataNews{% endblock author %}">
     {%- block style %}
       {% include "_css.html" %}
     {%- endblock style %}
+    <script src="//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js"></script>
+    <script>
+      WebFont.load({
+        google: {
+          families: ['Raleway']
+        }
+      });
+    </script>
   </head>
   <body>
   {%- block nav %}

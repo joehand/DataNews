@@ -42,7 +42,7 @@ class ProductionConfig(Config):
 
     ASSETS_AUTO_BUILD = False
     SEND_FILE_MAX_AGE_DEFAULT = 259200
-    JS_VERSION = 0.1
+    JS_VERSION = 0.2
 
 class DevelopmentConfig(Config):
     DEBUG = True

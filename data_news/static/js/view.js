@@ -218,9 +218,9 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
             var $el = $('#main-container');
 
             if ($el.hasClass('loading')) {
-                $el.animate({'opacity': '1'}, 200);
+                $el.animate({'opacity': '1'}, 50);
             } else {
-                $el.animate({'opacity': '0'}, 200);
+                $el.animate({'opacity': '0'}, 50);
             }
 
             $el.toggleClass('loading');

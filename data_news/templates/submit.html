@@ -7,7 +7,7 @@
           <p>Rather not fill out a form? <a href="{{url_for('page', title='submit_via_twitter')}}">Submit via Twitter!</a></p><br/>
         </div>
         <div class="row">
-            <form class="form form-horizontal" method="post" action="{{request.url}}">
+            <form class="form form-horizontal" method="post" action="{{request.url}}" data-pjax>
               {{ form.hidden_tag() }}
               {{ wtf.regular_field(form.url, autofocus=autofocus) }}
               {{ wtf.regular_field(form.title) }}
