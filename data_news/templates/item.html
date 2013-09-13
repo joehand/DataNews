@@ -30,8 +30,8 @@
 {%- if not edit %}
 {%- for comment in item.children recursive -%}  
     {% set depth = loop.depth0 %}
-    {%- if depth > 11 %}
-    {% set depth = 11 %}
+    {%- if depth > 9 %}
+    {% set depth = 9 %}
     {% endif -%}
 
 <div class="row">
