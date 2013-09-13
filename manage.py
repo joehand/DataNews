@@ -22,6 +22,10 @@ def db_migrate(message):
     print message
     os.system('alembic revision --autogenerate -m "%s"' % message)
 
+@manager.command
+def build_js():
+    os.system('cd data_news/static/js && node ../../../r.js -o app.build.js')
+
 def shell_context():
     return dict(app=app)          
 
