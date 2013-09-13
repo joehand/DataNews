@@ -44,6 +44,7 @@ mail = Mail(app)
 assets = Environment(app)
 
 assets.auto_build = app.config['ASSETS_AUTO_BUILD']
+assets.manifest = 'file'
 
 compress = Compress(app)
 
