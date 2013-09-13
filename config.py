@@ -41,7 +41,7 @@ class ProductionConfig(Config):
     SECURITY_EMAIL_SENDER = 'joe@joehand.org'
 
     ASSETS_AUTO_BUILD = False
-    SEND_FILE_MAX_AGE_DEFAULT = 259200
+    SEND_FILE_MAX_AGE_DEFAULT = 2592000
     JS_VERSION = 0.2
 
 class DevelopmentConfig(Config):
