@@ -76,7 +76,7 @@ class ItemView(FlaskView):
         """
         posts = Item.ranked_posts(page)
         return render_template('list.html',
-            items = posts)
+            items = posts, title='Home')
 
     @route('/item/<int:id>', endpoint='item')
     def get_item(self, id):
@@ -86,8 +86,12 @@ class ItemView(FlaskView):
         """
         item = Item.query.options(db.subqueryload_all('children.children')).get_or_404(id)
         commentForm = self._commentForm(request)
+
+        title = item.title
+        if item.kind == 'comment':
+            title = item.user.name + ' comment'
         return render_template('item.html',
-            item = item, form = commentForm, title=item.title)
+            item = item, form = commentForm, title=title)
 
     @route('/<title>', endpoint='page')
     def get_page(self, title):
@@ -121,7 +125,7 @@ class ItemView(FlaskView):
             items_obj = Item.query.order_by(Item.timestamp.desc()).filter_by(**filters).paginate(page)
         else:
             items_obj = Item.query.order_by(Item.timestamp.desc()).paginate(page)
-        return render_template('list.html', items=items_obj, filters=filters)
+        return render_template('list.html', items=items_obj, filters=filters, title='Recent')
 
 
     @route('/item/edit/<int:id>', endpoint='item_edit')
