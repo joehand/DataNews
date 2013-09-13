@@ -6,7 +6,7 @@
         {%- endif -%}
     </script>
 
-    {%- if not config['HEROKU_PROD'] %}
+    {%- if config['HEROKU_PROD'] %}
     {% set mainfile = 'js/app.min.' + config['JS_VERSION'] %}
     <script data-main="{{ url_for('static', filename=mainfile)}}" src="{{ url_for('static', filename='js/require.js')}}"></script>
     <script>
