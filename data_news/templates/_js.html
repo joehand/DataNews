@@ -1,13 +1,19 @@
     <script>
-        {% if current_user.id %}
+        {%- if current_user.id -%}
         var currentUser = {{current_user.id}};
-        {% else %}
+        {%- else -%}
         var currentUser = false;
-        {% endif %}
+        {%- endif -%}
     </script>
 
     {%- if config['HEROKU_PROD'] %}
-    <script data-main="{{ url_for('static', filename='js/app.min')}}" src="{{ url_for('static', filename='js/require.js')}}"></script>
+    <script type="text/javascript">
+      var require = {
+          urlArgs : "v="+{{config['JS_VERSION']}},
+          deps : ["{{ url_for('static', filename='js/app.min')}}"]
+      };
+    </script>
+    <script src="{{ url_for('static', filename='js/require.js')}}?v={{config['JS_VERSION']}}"></script>
     <script>
       (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
       (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
