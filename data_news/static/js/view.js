@@ -153,12 +153,6 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
             //Init the pjax for links
             $(document).pjax('a[data-pjax]', self.id);
 
-            $(document).on('pjax:timeout', function(event) {
-                // Prevent default timeout redirection behavior
-                console.log('timeout');
-                event.preventDefault();
-            });
-
             //Init the pjax for forms
             $(document).on('submit', 'form[data-pjax]', function(event) {
                 $.pjax.submit(event, '#main', {'scrollTo':false});
@@ -168,8 +162,14 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
                 xhr.setRequestHeader('source_url', document.URL);
             });
 
+            $(document).on('pjax:timeout', function(event) {
+                // Prevent default timeout redirection behavior
+                console.log('timeout');
+                event.preventDefault();
+            });
 
-            $(document).on('pjax:complete', function(e, xhr, pj) {
+
+            /*$(document).on('pjax:complete', function(e, xhr, pj) {
                 console.log('complete');
                 console.log(e, xhr, pj);
             });
@@ -178,16 +178,16 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
             $(document).on('pjax:success', function(e, xhr, pj) {
                 console.log('success');
                 console.log(e, xhr, pj);
-            });
+            });*/
 
 
             self.$el.on('pjax:start', function(e, xhr, pj) {
-                console.log('pjax start')
+                //console.log('pjax start')
                 self.toggleLoading();
             });
 
             self.$el.on('pjax:end', function(e, xhr, pj) {
-                console.log('pjax end')
+                //console.log('pjax end')
                 self.itemViews = []; // Clear old Item views
                 self.initAllItems(); // Make new ones!
                 self.toggleLoading();

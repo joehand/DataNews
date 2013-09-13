@@ -15,6 +15,6 @@ define([
     var appView = new AppView();
     var appModel = new AppModel();
 
-    console.log(appView);
+    //console.log(appView);
 
 });

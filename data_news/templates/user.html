@@ -1,5 +1,5 @@
 {% extends "_base.html" %}
-{% import "bootstrap_wtf.html" as wtf %}
+{% import "_wtf.html" as wtf %}
 
 {% block content %}
         <div class="row">
@@ -18,17 +18,9 @@
                     <div class="col-md-10 col-lg-10 col-sm-8">
                     {{ form.hidden_tag() }}
 
-                    {{ wtf.inline_wtf(form.name, value=user.name) }}
-                    {%- if user.email %}
-                      {{ wtf.inline_wtf(form.email, value=user.email) }}
-                    {% else -%}
-                      {{ wtf.inline_wtf(form.email, placeholder='Email Address') }}
-                    {% endif -%}
-                    {% if user.twitter_handle %}
-                      {{ wtf.inline_wtf(form.twitter, value=user.twitter_handle, input_addon='@') }}
-                    {% else -%}
-                      {{ wtf.inline_wtf(form.twitter, placeholder='Twitter Username', input_addon='@') }}
-                    {% endif -%}
+                    {{ wtf.wtf_addon(form.name, value=user.name) }}
+                    {{ wtf.wtf_addon(form.email, placeholder='Email Address', value=user.email) }}
+                    {{ wtf.wtf_addon(form.twitter, placeholder='Twitter Username', value=user.twitter_handle, input_addon='@') }}
                     </div>
                     <div class="form-actions col-md-2 col-lg-2 col-sm-4 user-buttons">
                        <button name="action_save" type="submit" class="btn btn-primary">Submit Changes</button>

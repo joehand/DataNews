@@ -1,0 +1,56 @@
+{%- macro errors(field, description=None) %}
+    {%- if field.errors %}
+      {%- for error in field.errors %}
+        <p class="help-block">{{error|safe}}</p>
+      {%- endfor %}
+    {%- elif field.description -%}
+      <p class="help-block">{{field.description|safe}}</p>
+    {%- elif description -%}
+      <p class="help-block">{{description|safe}}</p>
+    {%- endif %}
+{%- endmacro %}
+
+
+{%- macro wtf_field(field) %}
+{%- with required = "required" if kwargs['required'] or field.flags.required else "" -%}
+{{field(class="form-control", placeholder=field.label.text, required=required, **kwargs)}}
+{%- endwith %}
+{%- endmacro %}
+
+{%- macro regular_field(field, description=None) %}
+<div class="form-group {% if field.errors %}has-error{% endif %}">
+  {{field.label(class="control-label col-lg-2 col-md-2")}}
+    <div class="col-lg-4 col-md-4">
+    {{field(class="form-control", **kwargs)|safe}}
+
+    {{errors(field, description)}}
+  </div>
+</div>
+{% endmacro %}
+
+
+{%- macro comment_field(field) %}
+<div class="form-group {% if field.errors %}has-error{% endif %}">
+  <div class="col-lg-12 col-md-12">
+    {{field(class="form-control input-lg comment-input", placeholder="Add a comment", **kwargs)|safe}}
+    {{errors(field)}}
+  </div>
+</div>
+{% endmacro %}
+
+{%- macro wtf_addon(field, input_addon=None) %}
+<div class="form-group col-md-4 col-lg-4 col-sm-6 {% if field.errors %}has-error{% endif %} {%- if input_addon %} pad-form{%- endif %}">
+    {{field.label(class="sr-only")}}
+    {%- if input_addon %}
+      <div class="input-group">
+          <span class="input-group-addon">{{input_addon}}</span>
+          {{field(class="form-control", **kwargs)|safe}}
+      </div>
+    {%- else %}
+    {{field(class="form-control", **kwargs)|safe}}
+    {%- endif %}
+    {{errors(field)}}
+</div>
+{%- endmacro %}
+
+

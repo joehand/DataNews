@@ -170,7 +170,7 @@ class Item(db.Model):
     kind = db.Column(db.String)
     votes = db.relationship('Vote', backref="item", primaryjoin="Vote.item_id==Item.id")
     parent_id = db.Column(db.Integer, db.ForeignKey('item.id'))
-    parent = db.relation('Item', remote_side=id, backref="children")
+    parent = db.relationship('Item', remote_side=id, backref="children")
 
     def __repr__(self):
         return '<Item %r>' % (self.id)

@@ -1,5 +1,4 @@
 {% extends "_base.html" %}
-{% import "bootstrap_wtf.html" as wtf %}
 
 {%- block content %}
 <div class="row">
@@ -29,11 +28,15 @@
 </div>
 {%- set item_page = False -%}
 {%- if not edit %}
-{%- for comment in item.get_children() -%}
-  {% set depth = comment[1] - 1 %}
-  {% set comment = comment[0] %}
+{%- for comment in item.children recursive -%}  
+    {% set depth = loop.depth0 %}
+    {%- if depth > 11 %}
+    {% set depth = 11 %}
+    {% endif -%}
+
 <div class="row">
   {%- include "_comment.html" %}
+  {{ loop(comment.children) }}
 </div>
 {%- endfor %}
 {% endif -%}

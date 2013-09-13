@@ -1,22 +1,24 @@
-{% import "bootstrap_wtf.html" as wtf %}
-{% if item.kind == 'page' %}
-{% set form_url = url_for('item', title=item.title.lower()) %}
+{% import "_wtf.html" as wtf %}
+{%- if edit -%}
+{% set form_url = url_for('item_edit', id=item.id) %}
+{%- elif item.kind == 'page' -%}
+{% set form_url = url_for('page', title=item.title.lower()) %}
 {% else %}
 {% set form_url = url_for('item', id=item.id) %}
-{% endif %}
+{%- endif -%}
 <form class="form form-horizontal comment-form {% if not item_page or edit %}comment-inline{% endif %}"method="post" action="{{form_url}}" data-pjax>
   {{ form.hidden_tag() }}
   
-  {% if not item_page %}
+  {%- if not item_page %}
   {{ wtf.comment_field(form.text, autofocus=autofocus) }}
   {% else %}
   {{ wtf.comment_field(form.text) }}
-  {% endif %}
-  {{ wtf.inline_field(form.kind) }}
-  {{ wtf.inline_field(form.parent_id, value=item.id) }}
-  {% if edit %}
-  {{ wtf.inline_field(form.edit, value=True) }}
-  {% endif %}
+  {% endif -%}
+  {{ wtf.wtf_field(form.kind) }}
+  {{ wtf.wtf_field(form.parent_id, value=item.id) }}
+  {%- if edit %}
+  {{ wtf.wtf_field(form.edit, value=True) }}
+  {% endif -%}
   <div class="form-group submit">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <button type="submit" class="btn btn-default btn-xs">submit</button>

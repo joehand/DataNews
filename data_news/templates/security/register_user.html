@@ -1,5 +1,5 @@
 {% extends "_base.html" %}
-{% import "bootstrap_wtf.html" as wtf %}
+{% import "_wtf.html" as wtf %}
 
 {% block title %}Register {% endblock title %}
 
@@ -9,11 +9,11 @@
 <form class="form form-horizontal" action="{{ url_for_security('register') }}" method="POST" name="register_user_form">
   {{ register_user_form.hidden_tag() }}
 
-  {{ wtf.horizontal_field(register_user_form.name, autofocus="autofocus") }}
-  {{ wtf.horizontal_field(register_user_form.email, description="Will be kept very private") }}
-  {{ wtf.horizontal_field(register_user_form.password) }}
+  {{ wtf.regular_field(register_user_form.name, autofocus="autofocus") }}
+  {{ wtf.regular_field(register_user_form.email, description="Will be kept very private") }}
+  {{ wtf.regular_field(register_user_form.password) }}
   {% if register_user_form.password_confirm %}
-    {{ wtf.horizontal_field(register_user_form.password_confirm) }}
+    {{ wtf.regular_field(register_user_form.password_confirm) }}
   {% endif %}
   <div class="form-group">
     <div class="col-md-offset-2 col-md-10 col-lg-offset-2 col-lg-10">

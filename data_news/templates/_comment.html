@@ -7,7 +7,7 @@
     {% set comment = item %}
 {% endif %}
 {% if comment.parent.kind == 'page' %}
-{% set parent_url = url_for('item', title=comment.parent.title.lower()) %}
+{% set parent_url = url_for('page', title=comment.parent.title.lower()) %}
 {% else %}
 {% set parent_url = url_for('item', id=comment.parent_id) %}
 {% endif %}
@@ -21,14 +21,14 @@
         <a href="{{url_for('item', id=comment.id)}}" data-pjax>{{pretty_date(comment.timestamp)}}</a>
         {% endif %}
         {% if current_user.id and comment.user_id == current_user.id and not edit %}
-            | <a href="{{url_for('item', id=comment.id, edit=True)}}" data-pjax>Edit</a>
+            | <a href="{{url_for('item_edit', id=comment.id)}}" data-pjax>Edit</a>
         {% endif %}
     </div>
 
     <div class="row comment-text">
         {{comment.text|safe|urlize}}  
         {% if current_user.id and not edit and not filters %} 
-        <small class="reply text-muted"><a href="{{url_for('item', id=comment.id)}}">reply</a></small>
+        <small class="reply text-muted"><a href="{{url_for('item_comment', id=comment.id)}}">reply</a></small>
         {% endif %}
     </div>
 </div>
