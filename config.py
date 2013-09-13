@@ -24,6 +24,7 @@ class Config(object):
     SECURITY_EMAIL_SUBJECT_PASSWORD_CHANGE_NOTICE =  'DataNews: your password changed'
 
     ASSETS_AUTO_BUILD = True
+    JS_VERSION = 'v1'
     
 class ProductionConfig(Config):
     DEBUG = False
@@ -42,7 +43,6 @@ class ProductionConfig(Config):
 
     ASSETS_AUTO_BUILD = False
     SEND_FILE_MAX_AGE_DEFAULT = 2592000
-    JS_VERSION = 0.2
 
 class DevelopmentConfig(Config):
     DEBUG = True

@@ -24,7 +24,8 @@ def db_migrate(message):
 
 @manager.command
 def build_js():
-    os.system('cd data_news/static/js && node ../../../r.js -o app.build.js')
+    jsfile = 'app.min.' + app.config['JS_VERSION'] + '.js'
+    os.system('cd data_news/static/js && node ../../../r.js -o app.build.js out=%s'%jsfile)
 
 def shell_context():
     return dict(app=app)          
