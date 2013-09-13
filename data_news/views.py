@@ -16,20 +16,19 @@ md = Markdown()
 allowed_tags = ['a', 'p','em','strong','code','pre','blockquote','ul','li','ol']
 super_tags = ['a', 'p','em','strong','code','pre','blockquote','ul','li','ol','h3','h4','h5','h6','img']
 
+@app.before_first_request
+def before_first():
+    session.permanent = True
+    if current_user.is_authenticated():
+        current_user.current_login_at = datetime.utcnow()
+        db.session.commit()
+
 
 @app.before_request
 def before_request():
-    session.permanent = True
-    g.user = current_user
-    if g.user.is_authenticated():
-        g.user.current_login_at = datetime.utcnow()
-        db.session.commit()
-    elif request.endpoint == 'index':
-        session['visited_index'] = True
-    elif session.get('visited_index', False):
-        session['return_anon'] = True
-    g.search_form = SearchForm()
     g.pages = Item.query.filter_by(kind='page').order_by(Item.title)
+    if current_user.is_anonymous() and session.get('visited_index', False):
+        session['return_anon'] = True
 
 
 class ItemView(FlaskView):
@@ -65,6 +64,11 @@ class ItemView(FlaskView):
         db.session.commit()
 
         return item
+
+    def before_index(self):
+        if current_user.is_anonymous() and not session.get('visited_index', False):
+            session['visited_index'] = True
+
 
     @route('/', endpoint='index')
     @route('/<int:page>')
@@ -260,42 +264,6 @@ class ItemView(FlaskView):
             return render_template('item.html',
                         item = item, form = commentForm, title=item.title, edit=True)
 
-ItemView.register(app)
-
-
-
-@app.route('/title/<title>', methods = ['GET', 'POST'])
-@app.route('/item2/<int:id>', methods = ['GET', 'POST'])
-def page2(id=None,title=None):
-    if commentForm.validate_on_submit():
-        
-        comment = submit_item(text=commentForm.text.data, parent_id=item_obj.id)
-
-        if comment.id and comment.parent_id:
-            flash('Thanks for adding to the discussion!', category = 'success')
-        else:
-            flash('Something went wrong adding your comment. Please try again', category='error')
-
-        next_url = request.headers.get('source_url', request.url)
-        path = urlparse(next_url)[2]
-        next_id = path[path.rfind('/') + 1:]
-        next_url = path + '#item-' + str(comment.id)
-
-        #Redefine the items to pass to template for PJAX
-        if 'item' in path:
-            item_obj = Item.query.get_or_404(next_id)
-        else: 
-            item_obj = Item.find_by_title(next_id).first_or_404()
-        commentForm = CommentForm()
-        commentForm.text.data = '' #form data isn't clearing, so do it manually
-
-        response = make_response(render_template('item.html',
-                                item = item_obj, form = commentForm, title=item_obj.title))
-
-        response.headers['X-PJAX-URL'] = next_url
-        return response
-
-
 class UserView(FlaskView):
     """ Get the beautiful user page
         Also a user can edit their own info here
@@ -329,23 +297,8 @@ class UserView(FlaskView):
             flash('Your edits are saved, thanks.', category = 'info')
             return redirect(url_for('user', name=form.name.data)) 
 
+ItemView.register(app)
 UserView.register(app)
-
-
-@app.route('/search', methods = ['GET', 'POST'])
-@app.route('/search/<query>')
-@app.route('/search/<query>/<int:page>')
-def search(query=None, page=1):
-    if g.search_form.validate_on_submit():
-        return redirect(url_for('search', query=g.search_form.search.data))
-    if request.args.get('query', None):
-        query = request.args.get('query')
-
-    results = Item.paged_search(query, page)
-    print results
-    return render_template('list.html',
-        query = query,
-        items = results)
 
 
 @app.errorhandler(404)
