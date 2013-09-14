@@ -288,17 +288,19 @@ class ItemView(FlaskView):
 
         return jsonify(vote.serialize)
 
-    def after_post_vote(self, id):
+    def after_post_vote(self, response):
         #TODO: Figure out how to make this specific to the post/items changed
         cache.delete_memoized(Item.voted_for)
         cache.delete_memoized(Item.ranked_posts)
         cache.delete_memoized(Item.get_item_and_children)
+        return response
 
-    def after_post_item_comment(self, id=None, title=None):
+    def after_post_item_comment(self, response):
         #TODO: Figure out how to make this specific to the post changed
         cache.delete_memoized(Item.ranked_posts)
         cache.delete_memoized(Item.get_item_and_children)
         cache.delete_memoized(Item.get_children)
+        return response
 
 class UserView(FlaskView):
     """ Get the beautiful user page
