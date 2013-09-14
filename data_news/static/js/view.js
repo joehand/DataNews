@@ -48,8 +48,9 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, votes) {
             } else if ($targ.hasClass('form-active')) {
                 $targ.parent().find('form').fadeIn('fast');
                 $targ.find('a').text('hide');
-            } else {  
+            } else if (!this.gettingForm) {  
                 var form_url = $targ.find('a').attr("href");
+                this.gettingForm = true
                 this.getCommentForm(form_url);
             }
             
@@ -73,7 +74,7 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, votes) {
                 type: 'GET',
                 dataType: 'json',
                 success: this.appendCommentForm,
-                error: function() { console.error('uh oh did not work!'); },
+                error: function() { console.error('Could not get comment form!'); },
                 beforeSend: setHeader
             }, this);
 
@@ -212,14 +213,14 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, votes) {
 
         toggleLoading: function() {
             var $el = $('#main-container');
+            $el.toggleClass('loading');
 
-            if ($el.hasClass('loading')) {
+            if (!$el.hasClass('loading')) {
                 $el.animate({'opacity': '1'}, 50);
             } else {
                 $el.animate({'opacity': '0'}, 50);
             }
 
-            $el.toggleClass('loading');
 
         },
 
