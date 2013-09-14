@@ -5,9 +5,21 @@ from flask.ext.s3 import create_all
 from tweets import TweetGetter
 from rootkey import *
 import os
+import gzip
 
 manager = Manager(app)
 tweets = TweetGetter()
+
+def compress(file_path):
+    """
+    Gzip a single file in place.
+    """
+    f_in = open(file_path, 'rb')
+    contents = f_in.readlines()
+    f_in.close()
+    f_out = gzip.open(file_path, 'wb')
+    f_out.writelines(contents)
+    f_out.close()
 
 @manager.command
 def twitter():
@@ -28,6 +40,10 @@ def db_migrate(message):
 def build_js():
     jsfile = 'app.min.' + app.config['JS_VERSION'] + '.js'
     os.system('cd data_news/static/js && node ../../../r.js -o app.build.js out=%s'%jsfile)
+    jsfile = 'data_news/static/js/' + jsfile
+    require = 'data_news/static/js/require.js'
+    compress(jsfile)
+    compress(require)
 
 @manager.command
 def upload_static():
