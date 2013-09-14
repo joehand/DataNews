@@ -24,7 +24,7 @@ class Config(object):
     SECURITY_EMAIL_SUBJECT_PASSWORD_CHANGE_NOTICE =  'DataNews: your password changed'
 
     ASSETS_AUTO_BUILD = True
-    JS_VERSION = 'v1.1'
+    JS_VERSION = 'v1.2'
 
     S3_BUCKET_NAME = 'data_news'
     
