@@ -49,7 +49,7 @@ assets.auto_build = app.config['ASSETS_AUTO_BUILD']
 assets.manifest = 'file'
 
 compress = Compress(app)
-s3 = FlaskS3(app)
+#s3 = FlaskS3(app)
 
 # Set tempalate globals
 from template_utils import get_domain, pretty_date

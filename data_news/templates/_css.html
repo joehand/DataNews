@@ -1,4 +1,4 @@
-{%- if config['HEROKU_PROD'] %}
+{%- if config['HEROKU_PROD'] and config['USE_S3'] %}
     {% assets filters="cssmin", output="css/main.%(version)s.css", "css/bootstrap.css", 
 "css/font-awesome.css", "css/site.css" %}
     <link href="https://data_news.s3.amazonaws.com{{ ASSET_URL }}" rel="stylesheet">
