@@ -1,6 +1,7 @@
 {% if depth %}
     {% set width = 12 - depth %}
 {% else %}
+    {% set depth = 0 %}
     {% set width = 12 %}
 {% endif %}
 {% if not comment %}
@@ -28,7 +29,7 @@
     <div class="row comment-text">
         {{comment.text|safe|urlize}}  
         {% if current_user.id and not edit and not filters%}
-        {% if depth and depth < 8 %} 
+        {% if not item_page and depth < 8 %} 
         <small class="reply text-muted"><a href="{{url_for('item_comment', id=comment.id)}}">reply</a></small>
         {% endif %}
         {% endif %}
