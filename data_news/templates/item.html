@@ -29,7 +29,6 @@
 {%- set item_page = False -%}
 {%- if not edit %}
 {%- for comment in item.children|sort(attribute='comment_score',reverse=True) recursive-%}   
-    {{comment.comment_score}}
     {% set depth = loop.depth0 %}
     {%- if depth > 8 %}
     {% set depth = 8 %}
