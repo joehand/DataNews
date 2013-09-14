@@ -45,6 +45,9 @@ class ProductionConfig(Config):
 
     ASSETS_AUTO_BUILD = False
     SEND_FILE_MAX_AGE_DEFAULT = 2592000
+    
+    S3_USE_CACHE_CONTROL = True
+    S3_CACHE_CONTROL = 2592000
 
 class DevelopmentConfig(Config):
     DEBUG = True
