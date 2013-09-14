@@ -28,7 +28,8 @@
 </div>
 {%- set item_page = False -%}
 {%- if not edit %}
-{%- for comment in item.children recursive -%}  
+{%- for comment in item.children|sort(attribute='comment_score',reverse=True) recursive-%}   
+    {{comment.comment_score}}
     {% set depth = loop.depth0 %}
     {%- if depth > 8 %}
     {% set depth = 8 %}
@@ -36,7 +37,7 @@
 
 <div class="row">
   {%- include "_comment.html" %}
-  {{ loop(comment.children) }}
+  {{ loop(comment.children|sort(attribute='comment_score',reverse=True)) }}
 </div>
 {%- endfor %}
 {% endif -%}

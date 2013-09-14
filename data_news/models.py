@@ -186,7 +186,7 @@ class Item(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User', backref='items', lazy='joined')
     kind = db.Column(db.String)
-    votes = db.relationship('Vote', backref="item", primaryjoin="Vote.item_id==Item.id")
+    votes = db.relationship('Vote', backref="item", primaryjoin="Vote.item_id==Item.id", lazy='joined')
     parent_id = db.Column(db.Integer, db.ForeignKey('item.id'))
     children = db.relationship('Item',
                         backref=db.backref("parent", 
@@ -196,6 +196,7 @@ class Item(db.Model):
                                             ),
                         lazy='immediate',
                         join_depth=9,
+                        order_by=db.desc('Item.timestamp')
                     ) 
 
     def __repr__(self):
