@@ -14,7 +14,7 @@ def get_domain(url):
 
     return domain
 
-@cache.memoize(60*5)
+@cache.memoize(5)
 def local_time(utc=False):
     """ Make a utc time into a local time
     """
@@ -26,7 +26,7 @@ def local_time(utc=False):
 
     return utc.astimezone(to_zone)
 
-@cache.memoize(60*5)
+@cache.memoize(5)
 def pretty_date(time=False):
     """
     Get a datetime object or a int() Epoch timestamp and return a
