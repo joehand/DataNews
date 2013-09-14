@@ -1,7 +1,9 @@
 # manage.py
 from data_news import app
 from flask.ext.script import Manager, Shell
+from flask.ext.s3 import create_all
 from tweets import TweetGetter
+from rootkey import *
 import os
 
 manager = Manager(app)
@@ -27,8 +29,14 @@ def build_js():
     jsfile = 'app.min.' + app.config['JS_VERSION'] + '.js'
     os.system('cd data_news/static/js && node ../../../r.js -o app.build.js out=%s'%jsfile)
 
+@manager.command
+def upload_static():
+    create_all(app, user=AccessKey, password=SecretKey)
+
 def shell_context():
-    return dict(app=app)          
+    return dict(app=app)   
+
+ 
 
 #runs the app
 if __name__ == '__main__':
