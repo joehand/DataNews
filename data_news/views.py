@@ -5,6 +5,7 @@ from flask.ext.security import login_required, current_user
 from flask.ext.classy import FlaskView, route
 from urlparse import urlparse
 from datetime import datetime
+import json
 from markdown import Markdown
 from markdownify import markdownify
 from bleach import clean
@@ -76,7 +77,6 @@ class ItemView(FlaskView):
 
     @route('/', endpoint='index')
     @route('/<int:page>', endpoint='index')
-    @cache.cached(timeout=50)
     def index(self, page=1):
         """ Our main index view.
             Returns the top 20 ranked posts and paginates if necessary
@@ -88,13 +88,12 @@ class ItemView(FlaskView):
             items = posts, title='Home')
 
     @route('/item/<int:id>', endpoint='item')
-    @cache.cached(timeout=50)
     def get_item(self, id):
         """ View for a singular item (post or comment)
             Form is used to comment on that post or comment
             TODO: Make form a part of this class?
         """
-        item = Item.query.options(db.subqueryload_all('children.children')).get_or_404(id)
+        item = Item.get_item_and_children(id)
         commentForm = self._commentForm(request)
 
         title = item.title
@@ -104,7 +103,6 @@ class ItemView(FlaskView):
             item = item, form = commentForm, title=title)
 
     @route('/<title>', endpoint='page')
-    @cache.cached(timeout=50)
     def get_page(self, title):
         """ View for a singular page (similar to item view but uses title)
             Form is used to comment on that post or comment
@@ -116,7 +114,6 @@ class ItemView(FlaskView):
 
     @route('/items', endpoint='items')
     @route('/items/<int:page>', endpoint='items')
-    @cache.cached(timeout=50)
     def get_items(self, page=1):
         """ Returns a sequential list of posts
             Add optional filters (used to get a user posts/comments)
@@ -159,7 +156,6 @@ class ItemView(FlaskView):
 
 
     @route('/reply/<int:id>', endpoint='item_comment')
-    @cache.cached(timeout=50)
     def get_comment_form(self, id):
         """
             Get only the comment reply form and return via JSON
@@ -174,8 +170,8 @@ class ItemView(FlaskView):
             return redirect(url_for('item', id=id))
 
     @route('/submit', endpoint='submit')
-    @cache.cached(timeout=3600)
     @login_required
+    @cache.cached(timeout=3600)
     def get_submit(self):
         """ Submit a new post!
         """
@@ -273,6 +269,24 @@ class ItemView(FlaskView):
         else:
             return render_template('item.html',
                         item = item, form = commentForm, title=item.title, edit=True)
+
+    @route('/vote/<int:id>', methods=['POST'], endpoint='vote')
+    @login_required
+    def vote(self, id):
+        """ Post Route for adding a vote
+            Submitted via AJAX
+        """
+        new_vote = json.loads(request.data)
+        vote = Vote(timestamp = datetime.utcnow(),
+                    user_from_id = current_user.id,
+                    user_to_id =  new_vote['user_to_id'],
+                    item_id =  new_vote['item_id']
+                )
+
+        db.session.add(vote)
+        db.session.commit()
+
+        return jsonify(vote.serialize)
 
 class UserView(FlaskView):
     """ Get the beautiful user page

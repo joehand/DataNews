@@ -13,6 +13,12 @@ def epoch_seconds(date):
     td = date - epoch
     return td.days * 86400 + td.seconds + (float(td.microseconds) / 1000000)
 
+def dump_datetime(value):
+    """Deserialize datetime object into string form for JSON processing."""
+    if value is None:
+        return None
+    return [value.strftime("%Y-%m-%d"), value.strftime("%H:%M:%S")]
+
 def paginate(query, page, per_page=20, error_out=True):
     if error_out and page < 1:
         abort(404)
@@ -28,7 +34,6 @@ def paginate(query, page, per_page=20, error_out=True):
         total = query.order_by(None).count()
 
     return Pagination(query, page, per_page, total, items)
-
 
 
 # Define models
@@ -61,6 +66,14 @@ class Vote(db.Model):
     def __str__(self):
         return str(self.id)
 
+    @property
+    def serialize(self):
+       """Return object data in easily serializeable format"""
+       return {
+           'id' : self.id,
+           'timestamp' : dump_datetime(self.timestamp),
+           'item_id' : self.item_id,
+       }
 
 class User(db.Model, UserMixin):
     """ Users!
@@ -183,7 +196,7 @@ class Item(db.Model):
     def __str__(self):
         return str(self.id)
 
-
+    @cache.memoize(50)
     def get_children(self):
         """ Get all the children of an item, recusively.
             Returns a list of tuples=(item object, depth).
@@ -199,7 +212,6 @@ class Item(db.Model):
         recurse(self, 0)
         return recursiveChildren
 
-    @cache.memoize(50)
     def voted_for(self, user_id):
         vote = Vote.query.filter_by(item_id = self.id, user_from_id = user_id).first()
         if vote:
@@ -228,12 +240,17 @@ class Item(db.Model):
         sign = 1 if votes > 0 else -1 if votes < 0 else 0.1
         return round(order + sign, 7)
 
+    @classmethod
+    def get_item_and_children(cls, id):
+        """ Get an item and load a few children deep
+        """
+        item = cls.query.options(db.subqueryload_all('children.children')).get_or_404(id)
+        return item
 
     @classmethod
     def ranked_posts(cls, page):
         """ Returns the top ranked posts by post_score
             TODO: This should be an sqlalchemy query, but I kept breaking that =(
-
         """
         items = cls.query.filter_by(kind = 'post').order_by(cls.timestamp.desc())
         items_paged = items.paginate(page)

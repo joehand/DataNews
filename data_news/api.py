@@ -22,5 +22,5 @@ api_manager.create_api(Item,
 
 api_manager.create_api(Vote, 
                    url_prefix='/api/v0', 
-                   methods=['GET', 'POST'], 
+                   methods=['GET'], 
                    exclude_columns=item_excludes)

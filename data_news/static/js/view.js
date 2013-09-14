@@ -3,7 +3,7 @@
  * Author: JoeHand
  * ========================================================================
  */
-define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
+define(['backbone', 'jquery', 'model'], function(Backbone, $, votes) {
 
     var ItemView = Backbone.View.extend({
         events: {
@@ -13,21 +13,19 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
 
         createVote: function(e) {
             // Create a vote!
-            
             var $targ = $(e.currentTarget);
 
             if (!currentUser) {
-               document.location.href = '/login';
+               document.location.href = '/login'; //better way to do this?
             } else {
                 if (!$targ.hasClass('invisible')) {
                     $targ.addClass('invisible')
 
                     //Create a vote. Some stuff set via model defaults (time, user)
-                    var vote = new VoteModel({
+                    var vote = votes.create({
                             item_id: this.item_id,
                             user_to_id: this.user_id
                         });
-                    vote.save()
 
                     var $countEl = this.$el.find('.vote-count'),
                         count = $countEl.text();
@@ -96,8 +94,6 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
             return this;
         },
 
-
-
     });
 
     // Our overall **AppView** is the top-level piece of UI.
@@ -127,7 +123,7 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, VoteModel) {
         },
 
         initialize: function() {
-            console.log('AppView init')
+            //console.log('AppView init')
 
             // Start up child views and some ajax magic
             this.initPjax();
