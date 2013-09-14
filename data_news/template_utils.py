@@ -2,7 +2,9 @@ from jinja2 import Markup
 from urlparse import urlparse
 from dateutil import tz
 from datetime import datetime
+from data_news import cache
 
+@cache.memoize(60*5)
 def get_domain(url):
     """ Return just the domain (and subdomain!) for a url
     """
@@ -12,6 +14,7 @@ def get_domain(url):
 
     return domain
 
+@cache.memoize(60*5)
 def local_time(utc=False):
     """ Make a utc time into a local time
     """
@@ -23,6 +26,7 @@ def local_time(utc=False):
 
     return utc.astimezone(to_zone)
 
+@cache.memoize(60*5)
 def pretty_date(time=False):
     """
     Get a datetime object or a int() Epoch timestamp and return a

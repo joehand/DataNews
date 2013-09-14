@@ -271,7 +271,7 @@ class ItemView(FlaskView):
 
     @route('/vote/<int:id>', methods=['POST'], endpoint='vote')
     @login_required
-    def vote(self, id):
+    def post_vote(self, id):
         """ Post Route for adding a vote
             Submitted via AJAX
         """
@@ -285,7 +285,20 @@ class ItemView(FlaskView):
         db.session.add(vote)
         db.session.commit()
 
+
         return jsonify(vote.serialize)
+
+    def after_post_vote(self, id):
+        #TODO: Figure out how to make this specific to the post/items changed
+        cache.delete_memoized(Item.voted_for)
+        cache.delete_memoized(Item.ranked_posts)
+        cache.delete_memoized(Item.get_item_and_children)
+
+    def after_post_item_comment(self, id=None, title=None):
+        #TODO: Figure out how to make this specific to the post changed
+        cache.delete_memoized(Item.ranked_posts)
+        cache.delete_memoized(Item.get_item_and_children)
+        cache.delete_memoized(Item.get_children)
 
 class UserView(FlaskView):
     """ Get the beautiful user page

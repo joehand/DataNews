@@ -8,11 +8,13 @@ from math import log
 
 epoch = datetime(1970, 1, 1)
 
+@cache.memoize(60*5)
 def epoch_seconds(date):
     """Returns the number of seconds from the epoch to date."""
     td = date - epoch
     return td.days * 86400 + td.seconds + (float(td.microseconds) / 1000000)
 
+@cache.memoize(60*5)
 def dump_datetime(value):
     """Deserialize datetime object into string form for JSON processing."""
     if value is None:
@@ -109,7 +111,7 @@ class User(db.Model, UserMixin):
         return 'http://www.gravatar.com/avatar/' + md5(self.email).hexdigest() + '?d=mm&s=' + str(size)
 
     @property
-    @cache.memoize(50)
+    @cache.memoize(60*5)
     def is_admin(self):
         for role in self.roles:
             if role.name == 'admin' or role.name == 'super':
@@ -117,7 +119,7 @@ class User(db.Model, UserMixin):
         return False
 
     @property
-    @cache.memoize(50)
+    @cache.memoize(60*5)
     def is_super(self):
         for role in self.roles:
             if role.name == 'super':
@@ -202,7 +204,7 @@ class Item(db.Model):
     def __str__(self):
         return str(self.id)
 
-    @cache.memoize(50)
+    @cache.memoize(30)
     def get_children(self):
         """ Get all the children of an item, recusively.
             Returns a list of tuples=(item object, depth).
@@ -218,6 +220,7 @@ class Item(db.Model):
         recurse(self, 0)
         return recursiveChildren
 
+    @cache.memoize(60*5)
     def voted_for(self, user_id):
         vote = Vote.query.filter_by(item_id = self.id, user_from_id = user_id).first()
         if vote:
@@ -225,7 +228,6 @@ class Item(db.Model):
         return False
 
     @property
-    @cache.memoize(50)
     def post_score(self):
         """The hot formula from Reddit."""
         votes = len(self.votes)
@@ -238,7 +240,6 @@ class Item(db.Model):
         return round(order + sign * seconds / 45000, 7)
 
     @property
-    @cache.memoize(50)
     def comment_score(self):
         """Give comments a score based on votes, replies."""
         votes = len(self.votes)
@@ -249,7 +250,7 @@ class Item(db.Model):
         return round(order + sign, 7)
 
     @classmethod
-    @cache.memoize(50)
+    @cache.memoize(30)
     def get_item_and_children(cls, id):
         """ Get an item
             Make sure everything we will need loads, since we are caching
@@ -261,7 +262,7 @@ class Item(db.Model):
         return item
 
     @classmethod
-    @cache.memoize(50)
+    @cache.memoize(30)
     def ranked_posts(cls, page):
         """ Returns the top ranked posts by post_score
             Load all necessary sub-queries so we can cache

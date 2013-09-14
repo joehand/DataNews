@@ -27,8 +27,10 @@
 
     <div class="row comment-text">
         {{comment.text|safe|urlize}}  
-        {% if current_user.id and not edit and not filters and depth < 8 %} 
+        {% if current_user.id and not edit and not filters%}
+        {% if depth and depth < 8 %} 
         <small class="reply text-muted"><a href="{{url_for('item_comment', id=comment.id)}}">reply</a></small>
+        {% endif %}
         {% endif %}
     </div>
 </div>

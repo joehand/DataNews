@@ -7,7 +7,6 @@ from flask.ext.mail import Mail
 from flask.ext.assets import Environment
 from flask.ext.compress import Compress
 from datetime import datetime
-from template_utils import get_domain, pretty_date
 from flask.ext.cacheify import init_cacheify
 
 app = Flask(__name__, static_folder='static', static_url_path='')
@@ -51,6 +50,7 @@ assets.manifest = 'file'
 compress = Compress(app)
 
 # Set tempalate globals
+from template_utils import get_domain, pretty_date
 app.jinja_env.globals['get_domain'] = get_domain
 app.jinja_env.globals['pretty_date'] = pretty_date
 
