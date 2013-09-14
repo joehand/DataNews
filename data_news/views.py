@@ -171,7 +171,6 @@ class ItemView(FlaskView):
 
     @route('/submit', endpoint='submit')
     @login_required
-    @cache.cached(timeout=3600)
     def get_submit(self):
         """ Submit a new post!
         """

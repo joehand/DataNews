@@ -2,7 +2,7 @@ from data_news import app, db, cache
 from flask.ext.security import UserMixin, RoleMixin
 from flask.ext.sqlalchemy import Pagination
 from sqlalchemy import func, case
-import flask.ext.whooshalchemy as whooshalchemy
+from sqlalchemy.ext.hybrid import hybrid_property
 from datetime import datetime
 from math import log
 
@@ -97,8 +97,6 @@ class User(db.Model, UserMixin):
     votes = db.relationship('Vote', backref="user_from", primaryjoin="Vote.user_from_id==User.id")
     roles = db.relationship('Role', secondary=roles_users,
                             backref=db.backref('users', lazy='dynamic'))
-    items = db.relationship('Item', backref='user',
-                                lazy='dynamic')
 
     def __repr__(self):
         return '<Item %r>' % (self.name)
@@ -177,7 +175,6 @@ class Item(db.Model):
                You have to do recursion on each parent. Should I make this a column?
                parent currently refers to just the immediate parent (post or comment)
     """
-    __searchable__ = ['title', 'url', 'text']
 
     id = db.Column(db.Integer, primary_key = True)
     title = db.Column(db.String(140))
@@ -185,10 +182,19 @@ class Item(db.Model):
     text = db.Column(db.String(3818))
     timestamp = db.Column(db.DateTime)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship('User', backref='items', lazy='joined')
     kind = db.Column(db.String)
     votes = db.relationship('Vote', backref="item", primaryjoin="Vote.item_id==Item.id")
     parent_id = db.Column(db.Integer, db.ForeignKey('item.id'))
-    parent = db.relationship('Item', remote_side=id, backref="children")
+    children = db.relationship('Item',
+                        backref=db.backref("parent", 
+                                            remote_side='Item.id', 
+                                            lazy='immediate',
+                                            join_depth=9,
+                                            ),
+                        lazy='immediate',
+                        join_depth=9,
+                    ) 
 
     def __repr__(self):
         return '<Item %r>' % (self.id)
@@ -219,6 +225,7 @@ class Item(db.Model):
         return False
 
     @property
+    @cache.memoize(50)
     def post_score(self):
         """The hot formula from Reddit."""
         votes = len(self.votes)
@@ -231,6 +238,7 @@ class Item(db.Model):
         return round(order + sign * seconds / 45000, 7)
 
     @property
+    @cache.memoize(50)
     def comment_score(self):
         """Give comments a score based on votes, replies."""
         votes = len(self.votes)
@@ -241,25 +249,39 @@ class Item(db.Model):
         return round(order + sign, 7)
 
     @classmethod
+    @cache.memoize(50)
     def get_item_and_children(cls, id):
-        """ Get an item and load a few children deep
+        """ Get an item
+            Make sure everything we will need loads, since we are caching
         """
-        item = cls.query.options(db.subqueryload_all('children.children')).get_or_404(id)
+        item = cls.query.options(
+                                 db.joinedload('user'),
+                                 db.joinedload('votes'),
+                                ).get_or_404(id)
         return item
 
     @classmethod
+    @cache.memoize(50)
     def ranked_posts(cls, page):
         """ Returns the top ranked posts by post_score
+            Load all necessary sub-queries so we can cache
             TODO: This should be an sqlalchemy query, but I kept breaking that =(
         """
-        items = cls.query.filter_by(kind = 'post').order_by(cls.timestamp.desc())
+        items = cls.query.options(db.joinedload('user'), 
+                                  db.joinedload('votes')
+                                 ).filter_by(kind = 'post').order_by(cls.timestamp.desc())
         items_paged = items.paginate(page)
         start = items_paged.per_page * (items_paged.page - 1)
         end = items_paged.per_page + start
         items_paged.items = sorted(items, 
                                    key=lambda x: x.post_score, 
                                    reverse=True)[start:end]
-        return items_paged
+        #items_paged.adf
+        return {'items' : items_paged.items, 
+                'has_next' : items_paged.has_next,
+                'next_num' : items_paged.next_num,
+                }
+
 
     @classmethod
     def find_by_title(cls, title, kind='page'):
@@ -271,11 +293,6 @@ class Item(db.Model):
                     func.lower(cls.title) == func.lower(title))
         return item_query
 
-    @classmethod
-    def paged_search(cls, query, page=1):
-        return paginate(cls.query.whoosh_search(query), page)
-
-#whooshalchemy.whoosh_index(app, Item)
 
 class Twitter(db.Model):
     """ Keep track of a few max id's for fetching via Twitter ID.
