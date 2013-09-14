@@ -302,6 +302,13 @@ class ItemView(FlaskView):
         cache.delete_memoized(Item.get_children)
         return response
 
+    def after_post_edit(self, response):
+        #TODO: Figure out how to make this specific to the post changed
+        cache.delete_memoized(Item.ranked_posts)
+        cache.delete_memoized(Item.get_item_and_children)
+        cache.delete_memoized(Item.get_children)
+        return response
+
 class UserView(FlaskView):
     """ Get the beautiful user page
         Also a user can edit their own info here

@@ -251,7 +251,7 @@ class Item(db.Model):
         return round(order + sign, 7)
 
     @classmethod
-    @cache.memoize(30)
+    @cache.memoize(10)
     def get_item_and_children(cls, id):
         """ Get an item
             Make sure everything we will need loads, since we are caching
@@ -263,7 +263,7 @@ class Item(db.Model):
         return item
 
     @classmethod
-    @cache.memoize(30)
+    @cache.memoize(10)
     def ranked_posts(cls, page):
         """ Returns the top ranked posts by post_score
             Load all necessary sub-queries so we can cache
