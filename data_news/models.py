@@ -1,4 +1,4 @@
-from data_news import app, db
+from data_news import app, db, cache
 from flask.ext.security import UserMixin, RoleMixin
 from flask.ext.sqlalchemy import Pagination
 from sqlalchemy import func, case
@@ -87,6 +87,9 @@ class User(db.Model, UserMixin):
     items = db.relationship('Item', backref='user',
                                 lazy='dynamic')
 
+    def __repr__(self):
+        return '<Item %r>' % (self.name)
+
     def __str__(self):
         return self.name
 
@@ -95,6 +98,7 @@ class User(db.Model, UserMixin):
         return 'http://www.gravatar.com/avatar/' + md5(self.email).hexdigest() + '?d=mm&s=' + str(size)
 
     @property
+    @cache.memoize(50)
     def is_admin(self):
         for role in self.roles:
             if role.name == 'admin' or role.name == 'super':
@@ -102,6 +106,7 @@ class User(db.Model, UserMixin):
         return False
 
     @property
+    @cache.memoize(50)
     def is_super(self):
         for role in self.roles:
             if role.name == 'super':
@@ -194,6 +199,7 @@ class Item(db.Model):
         recurse(self, 0)
         return recursiveChildren
 
+    @cache.memoize(50)
     def voted_for(self, user_id):
         vote = Vote.query.filter_by(item_id = self.id, user_from_id = user_id).first()
         if vote:

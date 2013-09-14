@@ -1,4 +1,4 @@
-from data_news import app, db
+from data_news import app, db, cache
 from flask import render_template, request, flash, abort, \
                  redirect, url_for, jsonify, session, make_response, g
 from flask.ext.security import login_required, current_user
@@ -16,6 +16,11 @@ md = Markdown()
 allowed_tags = ['a', 'p','em','strong','code','pre','blockquote','ul','li','ol']
 super_tags = ['a', 'p','em','strong','code','pre','blockquote','ul','li','ol','h3','h4','h5','h6','img']
 
+@cache.cached(timeout=3600, key_prefix='all_pages')
+def get_pages():
+    pages = Item.query.filter_by(kind='page').order_by(Item.title)
+    return [page for page in pages]
+
 @app.before_first_request
 def before_first():
     session.permanent = True
@@ -23,10 +28,9 @@ def before_first():
         current_user.current_login_at = datetime.utcnow()
         db.session.commit()
 
-
 @app.before_request
 def before_request():
-    g.pages = Item.query.filter_by(kind='page').order_by(Item.title)
+    g.pages = get_pages()
     if current_user.is_anonymous() and session.get('visited_index', False):
         session['return_anon'] = True
 
@@ -65,13 +69,14 @@ class ItemView(FlaskView):
 
         return item
 
-    def before_index(self):
+    def before_index(self, page=1):
         if current_user.is_anonymous() and not session.get('visited_index', False):
             session['visited_index'] = True
 
 
     @route('/', endpoint='index')
-    @route('/<int:page>')
+    @route('/<int:page>', endpoint='index')
+    @cache.cached(timeout=50)
     def index(self, page=1):
         """ Our main index view.
             Returns the top 20 ranked posts and paginates if necessary
@@ -83,6 +88,7 @@ class ItemView(FlaskView):
             items = posts, title='Home')
 
     @route('/item/<int:id>', endpoint='item')
+    @cache.cached(timeout=50)
     def get_item(self, id):
         """ View for a singular item (post or comment)
             Form is used to comment on that post or comment
@@ -98,6 +104,7 @@ class ItemView(FlaskView):
             item = item, form = commentForm, title=title)
 
     @route('/<title>', endpoint='page')
+    @cache.cached(timeout=50)
     def get_page(self, title):
         """ View for a singular page (similar to item view but uses title)
             Form is used to comment on that post or comment
@@ -108,8 +115,9 @@ class ItemView(FlaskView):
             item = page, form = commentForm, title=page.title)
 
     @route('/items', endpoint='items')
-    @route('/items/<int:page>')
-    def get_items(self, page = 1):
+    @route('/items/<int:page>', endpoint='items')
+    @cache.cached(timeout=50)
+    def get_items(self, page=1):
         """ Returns a sequential list of posts
             Add optional filters (used to get a user posts/comments)
 
@@ -151,6 +159,7 @@ class ItemView(FlaskView):
 
 
     @route('/reply/<int:id>', endpoint='item_comment')
+    @cache.cached(timeout=50)
     def get_comment_form(self, id):
         """
             Get only the comment reply form and return via JSON
@@ -165,6 +174,7 @@ class ItemView(FlaskView):
             return redirect(url_for('item', id=id))
 
     @route('/submit', endpoint='submit')
+    @cache.cached(timeout=3600)
     @login_required
     def get_submit(self):
         """ Submit a new post!

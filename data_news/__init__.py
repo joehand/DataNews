@@ -8,6 +8,7 @@ from flask.ext.assets import Environment
 from flask.ext.compress import Compress
 from datetime import datetime
 from template_utils import get_domain, pretty_date
+from flask.ext.cacheify import init_cacheify
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 
@@ -19,6 +20,7 @@ else:
 
 # Create database connection object
 db = SQLAlchemy(app)
+cache = init_cacheify(app)
 
 from models import User, Role
 from forms import ExtendedRegisterForm, ExtendedLoginForm
