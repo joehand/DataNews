@@ -10,15 +10,13 @@ import gzip
 manager = Manager(app)
 tweets = TweetGetter()
 
-def compress(file_path, new_name=None):
+def compress(file_path):
     """
     Gzip a single file in place.
     """
     f_in = open(file_path, 'rb')
     contents = f_in.readlines()
     f_in.close()
-    if new_name:
-        file_path = new_name
     f_out = gzip.open(file_path, 'wb')
     f_out.writelines(contents)
     f_out.close()
@@ -45,7 +43,7 @@ def build_js():
     jsfile = 'data_news/static/js/' + jsfile
     require = 'data_news/static/js/require.js'
     compress(jsfile)
-    compress(require, new_name='data_news/static/js/require.min.js')
+    compress(require)
 
 @manager.command
 def upload_static():
