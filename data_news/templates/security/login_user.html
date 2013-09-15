@@ -4,7 +4,7 @@
 {% block title %}Login {% endblock title %}
 
 {% block content %}
-<h1>Login <small>| <a href="{{ url_for_security('register') }}" data-pjax="true">Register</a></small></h1>
+<h1>Login <small>| <a href="{{ url_for_security('register') }}" data-pjax>Register</a></small></h1>
 <br/>
 <form class="form form-horizontal" action="{{ url_for_security('login') }}" method="POST" name="login_user_form">
   {{ login_user_form.hidden_tag() }}
@@ -12,7 +12,7 @@
   {{ wtf.regular_field(login_user_form.password) }}
   {% if security.recoverable %}
   <div class="form-group">
-    <div class="col-md-offset-2 col-md-10 col-lg-offset-2 col-lg-10"><small><a href="{{ url_for_security('forgot_password') }}" data-pjax="true">Forgot Password?</a></small>
+    <div class="col-md-offset-2 col-md-10 col-lg-offset-2 col-lg-10"><small><a href="{{ url_for_security('forgot_password') }}" data-pjax>Forgot Password?</a></small>
     </div>
   </div>
   {% endif %}

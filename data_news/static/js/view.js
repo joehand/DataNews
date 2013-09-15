@@ -152,11 +152,13 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, votes) {
 
             //Init the pjax for forms
             $(document).on('submit', 'form[data-pjax]', function(event) {
+                $(event.target).find('.btn').addClass('disabled').button('loading');
                 $.pjax.submit(event, '#main', {'scrollTo':false});
             });
 
             $(document).on('pjax:beforeSend', function(e, xhr, pj) {
                 xhr.setRequestHeader('source_url', document.URL);
+                console.log('pjax');
             });
 
             $(document).on('pjax:timeout', function(event) {
@@ -179,15 +181,18 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, votes) {
 
 
             self.$el.on('pjax:start', function(e, xhr, pj) {
-                //console.log('pjax start')
-                self.toggleLoading();
+                if (pj.type == 'GET'){
+                    self.toggleLoading();
+                }
             });
 
             self.$el.on('pjax:end', function(e, xhr, pj) {
                 //console.log('pjax end')
                 self.itemViews = []; // Clear old Item views
                 self.initAllItems(); // Make new ones!
-                self.toggleLoading();
+                if (pj.type == 'GET'){
+                    self.toggleLoading();
+                }
 
                 var $link_parent = $(e.relatedTarget).parent()
                 if ($link_parent.hasClass('pjax-active')) {

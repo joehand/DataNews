@@ -88,8 +88,8 @@ def build_js():
     os.system('cd data_news/static/js && node ../../../r.js -o app.build.js out=%s'%jsfile)
     jsfile = 'data_news/static/js/' + jsfile
     require = 'data_news/static/js/require.js'
-    compress(jsfile)
-    compress(require)
+    #compress(jsfile)
+    #compress(require)
 
 @manager.command
 def upload_static():
