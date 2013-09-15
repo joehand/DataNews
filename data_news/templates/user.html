@@ -20,7 +20,12 @@
 
                     {{ wtf.wtf_addon(form.name, value=user.name) }}
                     {{ wtf.wtf_addon(form.email, placeholder='Email Address', value=user.email) }}
-                    {{ wtf.wtf_addon(form.twitter, placeholder='Twitter Username', value=user.twitter_handle, input_addon='@') }}
+
+                    {%- if user.twitter_handle %}
+                    {{ wtf.wtf_addon(form.twitter, value=user.twitter_handle, input_addon='@') }}
+                    {% else -%}
+                    {{ wtf.wtf_addon(form.twitter, placeholder='Twitter Username', input_addon='@') }}
+                    {% endif -%}
                     </div>
                     <div class="form-actions col-md-2 col-lg-2 col-sm-4 user-buttons">
                        <button name="action_save" type="submit" class="btn btn-primary">Submit Changes</button>
