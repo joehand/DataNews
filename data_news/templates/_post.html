@@ -5,9 +5,14 @@
     <div class="row post-title">
         <h4>
             {%- include "_vote.html" -%}
-            {%- cache 60*60*24, 'item_title', item.__str__(), item.title, item.url -%}
+
+            {%- cache 60*60*24, 'item_title', item.__str__(), item.changed -%}
+            {%- if item.url %}
             <a href="{{item.url}}" data-pjax>{{item.title|safe}}</a> 
             <small class="text-muted">({{get_domain(item.url)}})</small>
+            {%- else -%}
+            <a href="{{url_for('item_edit', id=item.id)}}" data-pjax>{{item.title|safe}}</a>
+            {% endif -%}
             {%- endcache -%}
         </h4>
     </div>

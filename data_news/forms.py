@@ -17,7 +17,7 @@ class PostForm(Form):
     title = TextField('Title', description='',
                        validators=[required()])
     url = URLField('URL', description='',
-                       validators=[url()])
+                       validators=[url(), optional()])
     text = TextAreaField('Text', description='',
                        validators=[])
     kind = TextField('Kind')
