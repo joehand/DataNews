@@ -64,6 +64,7 @@ class ItemView(FlaskView):
                     kind = kind,
                     parent_id = parent_id,
                     timestamp = datetime.utcnow(),
+                    last_changed = datetime.utcnow(),
                     user_id = current_user.id)
 
         db.session.add(item)
@@ -259,11 +260,12 @@ class ItemView(FlaskView):
         item = Item.query.get_or_404(id)
         if commentForm.validate_on_submit():
             item.text = self._clean_text(commentForm.text.data)
+            item.last_changed = datetime.utcnow()
             item = db.session.merge(item)
             db.session.commit()
 
             cache.delete_memoized(Item.get_children)
-            key = make_template_fragment_key("item_text", vary_on=[item.__str__(), item.text])
+            key = make_template_fragment_key("item_text", vary_on=[item.__str__(), item.changed])
             cache.delete(key)
 
             flash('Edit saved', 'info')

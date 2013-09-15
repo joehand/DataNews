@@ -29,7 +29,7 @@
         {% endif -%}
     </div>
     <div class="row comment-text">
-        {%- cache 60*5, 'item_text', comment.__str__(), comment.text -%}
+        {%- cache 60*5, 'item_text', comment.__str__(), comment.changed -%}
         {{comment.text|safe|urlize}}  
         {%- endcache -%}
         {%- if current_user.is_authenticated() and not edit and not filters%}

@@ -4,7 +4,7 @@
             <h3>{{item.title|safe}} <small>DataNews</small></h3>
         </div>
         <div class="panel-body">
-            {%- cache 60*5, 'item_text', item.__str__(), item.text -%}
+            {%- cache 60*5, 'item_text', item.__str__(), item.changed -%}
             {{item.text|safe|urlize}}
             {%- endcache -%}
         </div>

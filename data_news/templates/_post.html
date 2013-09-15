@@ -23,7 +23,7 @@
     </div>
     {%- if item_page %}
         <div class="row post-text">
-        {%- cache 60*60*5, 'item_text', item.__str__(), item.text -%}
+        {%- cache 60*60*5, 'item_text', item.__str__(), item.changed -%}
             {{item.text|safe|urlize}}
         {%- endcache -%}
         </div>

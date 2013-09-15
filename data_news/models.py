@@ -183,6 +183,7 @@ class Item(db.Model):
     url = db.Column(db.String(), unique=True)
     text = db.Column(db.String(3818))
     timestamp = db.Column(db.DateTime)
+    last_changed = db.Column(db.DateTime, default=datetime.utcnow())
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     user = db.relationship('User', backref='items', lazy='joined')
     kind = db.Column(db.String)
@@ -202,6 +203,10 @@ class Item(db.Model):
         
     def __str__(self):
         return str(self.id)
+
+    @property
+    def changed(self):
+        return str(self.last_changed)
 
     @cache.memoize(60*5)
     def get_children(self):
