@@ -1,16 +1,25 @@
 # manage.py
-from data_news import app
+from data_news import app, db, user_datastore
+from data_news.models import User, Role
 from flask.ext.script import Manager, Shell
 from flask.ext.s3 import create_all
-from tweets import TweetGetter
+from flask.ext.security.utils import encrypt_password
 import os
 import gzip
+import bcrypt
+from datetime import datetime
 
-if not app.config['HEROKU_PROD']:
+if not os.environ.get('HEROKU_PROD', False):
     from rootkey import *
 
 manager = Manager(app)
-tweets = TweetGetter()
+
+try: 
+    from tweets import TweetGetter
+    tweets = TweetGetter()
+except:
+    print 'cannot import twitter stuff'
+    pass
 
 def compress(file_path):
     """
@@ -28,6 +37,41 @@ def twitter():
     tweets.get_mentions();
     tweets.get_favorites();
     print 'all done!'
+
+@manager.command
+def db_create():
+    db.create_all()
+    roles = [('user', 'Generic user role'),
+             ('admin', 'Regular Admin'),
+             ('super', 'Super secret admin'),
+            ]
+    print 'making roles'
+    for role_name, role_desc in roles:
+        role = user_datastore.create_role(name=role_name, description=role_desc)
+        db.session.commit()
+
+    user = user_datastore.find_role('user')
+    superAdmin = user_datastore.find_role('super')
+
+    print 'making user'
+    user = user_datastore.create_user(
+            email='joe@joehand.org',
+            name='DataNews',
+            password=encrypt_password('password')
+            )
+    joe = user_datastore.create_user(
+            email='joe.a.hand@gmail.com',
+            name='jh',
+            password=encrypt_password('password')
+            )
+
+    print 'adding roles to user'
+    user_datastore.add_role_to_user(joe, superAdmin)
+    user.created_at = datetime.utcnow()
+    joe.created_at = datetime.utcnow()
+    print 'finishing up'
+    db.session.commit()
+
 
 @manager.command
 def db_upgrade():

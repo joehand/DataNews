@@ -22,6 +22,8 @@ class Config(object):
     SECURITY_EMAIL_SUBJECT_PASSWORD_RESET = 'DataNews: password reset instructions'
     SECURITY_EMAIL_SUBJECT_PASSWORD_NOTICE = 'DataNews: your password has been reset'
     SECURITY_EMAIL_SUBJECT_PASSWORD_CHANGE_NOTICE =  'DataNews: your password changed'
+    
+    SECURITY_PASSWORD_HASH = 'bcrypt'
 
     ASSETS_AUTO_BUILD = True
     JS_VERSION = 'v1.1'
@@ -33,7 +35,6 @@ class ProductionConfig(Config):
     SECRET_KEY = os.environ.get('SECRET_KEY')
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
-    SECURITY_PASSWORD_HASH = 'bcrypt'
     SECURITY_PASSWORD_SALT = os.environ.get('PASSWORD_SALT')
 
     #Mail config
@@ -52,7 +53,7 @@ class ProductionConfig(Config):
 class DevelopmentConfig(Config):
     DEBUG = True
 
-    WHOOSH_BASE = os.path.join(basedir, 'search.db')
+    SECURITY_PASSWORD_SALT = '/2aX16zPnnIgfMwkOjGX4S'
 
     DEBUG_TB_INTERCEPT_REDIRECTS = False
 
