@@ -1,11 +1,12 @@
     <script>
-        {%- if current_user.id -%}
+        {%- if current_user.is_authenticated() -%}
         var currentUser = {{current_user.id}};
         {%- else -%}
         var currentUser = false;
         {%- endif -%}
     </script>
 
+{%- cache 60*60*7, 'js', config['JS_VERSION'] -%}
     {%- if config['HEROKU_PROD'] %}
     {% set mainfile = 'js/app.min.' + config['JS_VERSION'] %}
     <script data-main="{{ url_for('static', filename=mainfile)}}" src="{{ url_for('static', filename='js/require.js')}}"></script>
@@ -20,4 +21,5 @@
     </script>
     {% else %}
     <script data-main="{{ url_for('static', filename='js/app')}}" src="{{ url_for('static', filename='js/require.js')}}"></script>
-    {% endif -%}
+    {% endif -%}    
+{% endcache %}

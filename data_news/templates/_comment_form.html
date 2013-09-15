@@ -6,6 +6,7 @@
 {% else %}
 {% set form_url = url_for('item', id=item.id) %}
 {%- endif -%}
+{% cache 3600, [form, form_url, item_page, edit] %}
 <form class="form form-horizontal comment-form {% if not item_page or edit %}comment-inline{% endif %}"method="post" action="{{form_url}}" data-pjax>
   {{ form.hidden_tag() }}
   
@@ -25,3 +26,4 @@
     </div>
   </div>
 </form>
+{% endcache %}

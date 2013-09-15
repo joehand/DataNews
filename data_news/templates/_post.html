@@ -1,23 +1,31 @@
+{%- if current_user.is_authenticated() and item.user_id == current_user.id%}    
+    {% set owner = 'true' %}
+{% endif -%}
 <div class="item post" id="item-{{item.id}}" data-id="{{item.id}}" data-user="{{item.user_id}}">
     <div class="row post-title">
         <h4>
             {%- include "_vote.html" -%}
+            {%- cache 60*60*24, 'item_title', item.__str__(), item.title, item.url -%}
             <a href="{{item.url}}" data-pjax>{{item.title|safe}}</a> 
             <small class="text-muted">({{get_domain(item.url)}})</small>
+            {%- endcache -%}
         </h4>
     </div>
     <div class="row post-info">
-        <p><span class="vote-count"><b>{{item.votes|length}}</b></span> | From <a href="{{url_for('user', name=item.user.name)}}" data-pjax>{{item.user.name}}</a>
+        <p><span class="vote-count"><b>{{item.votes|length}}</b></span> | From 
+        {% cache 60*60*24, 'user', item.user.name -%}<a href="{{url_for('user', name=item.user.name)}}" data-pjax>{{item.user.name}}</a>{% endcache %}
         <span>{{pretty_date(item.timestamp)}}</span> | 
         <span><a href="{{url_for('item', id=item.id)}}" data-pjax>{{item.get_children()|length}} comments</a></span>
-        {%- if current_user.id and item.user_id == current_user.id and not edit %}
+        {%- if owner and not edit %}
             | <a href="{{url_for('item_edit', id=item.id)}}" data-pjax>Edit</a>
         {% endif -%}
         </p>
     </div>
     {%- if item_page %}
         <div class="row post-text">
+        {%- cache 60*60*5, 'item_text', item.__str__(), item.text -%}
             {{item.text|safe|urlize}}
+        {%- endcache -%}
         </div>
     {% endif -%}
 

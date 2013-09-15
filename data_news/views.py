@@ -3,6 +3,7 @@ from flask import render_template, request, flash, abort, \
                  redirect, url_for, jsonify, session, make_response, g
 from flask.ext.security import login_required, current_user
 from flask.ext.classy import FlaskView, route
+from flask.ext.cache import make_template_fragment_key
 from urlparse import urlparse
 from datetime import datetime
 import json
@@ -221,6 +222,9 @@ class ItemView(FlaskView):
                 flash('Thanks for adding to the discussion!', category = 'success')
             else:
                 flash('Something went wrong adding your comment. Please try again', category='error')
+                return render_template('submit.html', form=form, title='Submit')
+
+            cache.delete_memoized(Item.get_children)
 
             next_url = request.headers.get('source_url', request.url)
             path = urlparse(next_url)[2]
@@ -258,6 +262,10 @@ class ItemView(FlaskView):
             item = db.session.merge(item)
             db.session.commit()
 
+            cache.delete_memoized(Item.get_children)
+            key = make_template_fragment_key("item_text", vary_on=[item.__str__(), item.text])
+            cache.delete(key)
+
             flash('Edit saved', 'info')
             response = make_response(render_template('item.html',
                         item = item, form = commentForm, title=item.title, edit=True))
@@ -285,29 +293,10 @@ class ItemView(FlaskView):
         db.session.add(vote)
         db.session.commit()
 
+        cache.delete_memoized(Item.voted_for)
+        cache.delete_memoized(Item.get_children)
 
         return jsonify(vote.serialize)
-
-    def after_post_vote(self, response):
-        #TODO: Figure out how to make this specific to the post/items changed
-        cache.delete_memoized(Item.voted_for)
-        cache.delete_memoized(Item.ranked_posts)
-        cache.delete_memoized(Item.get_item_and_children)
-        return response
-
-    def after_post_item_comment(self, response):
-        #TODO: Figure out how to make this specific to the post changed
-        cache.delete_memoized(Item.ranked_posts)
-        cache.delete_memoized(Item.get_item_and_children)
-        cache.delete_memoized(Item.get_children)
-        return response
-
-    def after_post_edit(self, response):
-        #TODO: Figure out how to make this specific to the post changed
-        cache.delete_memoized(Item.ranked_posts)
-        cache.delete_memoized(Item.get_item_and_children)
-        cache.delete_memoized(Item.get_children)
-        return response
 
 class UserView(FlaskView):
     """ Get the beautiful user page
@@ -334,11 +323,16 @@ class UserView(FlaskView):
     def post(self, name):
         user = User.find_user_by_name(name).first_or_404()
         form = UserForm()
-        if user == current_user and form.validate_on_submit():    
+        if user == current_user and form.validate_on_submit(): 
+            old_name = current_user.name   
             user.email = form.email.data
             user.name = form.name.data
             user.twitter_handle = form.twitter.data
             db.session.commit()
+
+            key = make_template_fragment_key("user", vary_on=[old_name])
+            cache.delete(key)
+
             flash('Your edits are saved, thanks.', category = 'info')
             return redirect(url_for('user', name=form.name.data)) 
 

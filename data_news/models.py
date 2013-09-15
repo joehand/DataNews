@@ -192,10 +192,8 @@ class Item(db.Model):
                         backref=db.backref("parent", 
                                             remote_side='Item.id', 
                                             lazy='immediate',
-                                            join_depth=9,
                                             ),
-                        lazy='immediate',
-                        join_depth=9,
+                        lazy='dynamic',
                         order_by=db.desc('Item.timestamp')
                     ) 
 
@@ -205,7 +203,7 @@ class Item(db.Model):
     def __str__(self):
         return str(self.id)
 
-    @cache.memoize(30)
+    @cache.memoize(60*5)
     def get_children(self):
         """ Get all the children of an item, recusively.
             Returns a list of tuples=(item object, depth).
@@ -213,7 +211,7 @@ class Item(db.Model):
         recursiveChildren = []
         def recurse(item, depth):
             if depth != 0:
-                recursiveChildren.append((item, depth))
+                recursiveChildren.append((item,depth))
             children = sorted(item.children, key=lambda x: x.comment_score, reverse=True)
             for child in children:
                 recurse(child, depth + 1)

@@ -15,7 +15,7 @@
 </div>
 <div class="row">
     <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
-    {%- if current_user.id %}
+    {%- if current_user.is_authenticated() %}
     {% include "_comment_form.html" %}
     {% else %}
     <div class="panel panel-default">
@@ -28,15 +28,13 @@
 </div>
 {%- set item_page = False -%}
 {%- if not edit %}
-{%- for comment in item.children|sort(attribute='comment_score',reverse=True) recursive-%}   
-    {% set depth = loop.depth0 %}
+{%- for comment, depth in item.get_children() -%}
+    {% set depth = depth - 1 %}
     {%- if depth > 8 %}
     {% set depth = 8 %}
     {% endif -%}
-
 <div class="row">
   {%- include "_comment.html" %}
-  {{ loop(comment.children|sort(attribute='comment_score',reverse=True)) }}
 </div>
 {%- endfor %}
 {% endif -%}
