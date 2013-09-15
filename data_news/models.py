@@ -7,6 +7,7 @@ from datetime import datetime
 from math import log
 
 epoch = datetime(1970, 1, 1)
+ILLEGAL_NAMES = ['active']
 
 @cache.memoize(60*5)
 def epoch_seconds(date):
@@ -83,7 +84,7 @@ class User(db.Model, UserMixin):
         The confirmed_at through login_count columns are updated by Flask-Security
     """
     id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255), unique=True)
+    email = db.Column(db.String(255))
     password = db.Column(db.String(255))
     name = db.Column(db.String(255), unique=True)
     active = db.Column(db.Boolean())
@@ -157,6 +158,8 @@ class User(db.Model, UserMixin):
     def make_unique_name(cls, name):
         """ Checks if name is being used. If it is, returns a new version.
         """
+        if name in ILLEGAL_NAMES:
+            name = name + str(1)
         if not cls.find_user_by_name(name).first():
             return name
         version = 2

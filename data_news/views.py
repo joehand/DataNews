@@ -322,12 +322,17 @@ class UserView(FlaskView):
             return render_template('user.html', user=user, form=form, title=user.name)
         return render_template('user.html', user=user, title=user.name)
 
+    @route('/active', endpoint='active_user')
+    def active_user(self):
+        return redirect(url_for('user', name=current_user.name))
+
     def post(self, name):
         user = User.find_user_by_name(name).first_or_404()
         form = UserForm()
         if user == current_user and form.validate_on_submit(): 
-            old_name = current_user.name   
-            user.email = form.email.data
+            old_name = current_user.name
+            if form.email.data != '':   
+                user.email = form.email.data
             user.name = form.name.data
             user.twitter_handle = form.twitter.data
             db.session.commit()

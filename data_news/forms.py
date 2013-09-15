@@ -1,4 +1,4 @@
-from models import User
+from models import User, ILLEGAL_NAMES
 from flask.ext.wtf import Form
 from wtforms import TextField, SelectMultipleField, HiddenField, TextAreaField
 from flask_wtf.html5 import URLField, EmailField
@@ -81,6 +81,11 @@ class UserForm(Form):
             self.name.errors.append('Must be between 2 and 15 characters')
             return False
 
+        if name.lower() in ILLEGAL_NAMES:
+            self.name.errors.append('Name not allowed. Please try another.')
+            self.name.data = ''
+            return False
+
         user = User.find_user_by_name(name).first()
         if validate_name and user is not None:
             name = User.make_unique_name(name)
@@ -122,6 +127,11 @@ class ExtendedRegisterForm(RegisterForm):
 
         
         name = self.name.data
+
+        if name.lower() in ILLEGAL_NAMES:
+            self.name.errors.append('Name not allowed. Please try another.')
+            self.name.data = ''
+            return False
 
         if not re.match("^[a-zA-Z0-9_-]+$", name):
             self.name.errors.append('Only letters, digits, dashes, underscores allowed')
