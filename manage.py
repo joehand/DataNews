@@ -3,9 +3,11 @@ from data_news import app
 from flask.ext.script import Manager, Shell
 from flask.ext.s3 import create_all
 from tweets import TweetGetter
-from rootkey import *
 import os
 import gzip
+
+if not app.config['HEROKU_PROD']:
+    from rootkey import *
 
 manager = Manager(app)
 tweets = TweetGetter()
