@@ -111,7 +111,7 @@ class ItemView(FlaskView):
         """ View for a singular page (similar to item view but uses title)
             Form is used to comment on that post or comment
         """
-        page = Item.find_by_title(title).first_or_404()
+        page = Item.find_by_title(title)
         commentForm = self._commentForm(request)
         return render_template('item.html',
             item = page, form = commentForm, title=page.title)
@@ -205,9 +205,13 @@ class ItemView(FlaskView):
                                text = form.text.data,
                                kind = kind)
 
+            cache.delete_memoized(Item.ranked_posts)
+
             flash('Thanks for the submission!', category = 'success')
 
-            return redirect(url_for('index'))
+            response = make_response(self.get_item(post.id))
+            response.headers['X-PJAX-URL'] = url_for('item', id=post.id)
+            return response
         else:
             return render_template('submit.html', form=form, title='Submit')
 
@@ -217,7 +221,7 @@ class ItemView(FlaskView):
     def post_item_comment(self, id=None, title=None):
         commentForm = self._commentForm(request)
         if not id:
-            id = Item.find_by_title(title).first_or_404().id
+            id = Item.find_by_title(title).id
         if commentForm.validate_on_submit():
             comment = self._submit_item(text=commentForm.text.data, parent_id=id)
 
@@ -227,8 +231,6 @@ class ItemView(FlaskView):
                 flash('Something went wrong adding your comment. Please try again', category='error')
                 return render_template('submit.html', form=form, title='Submit')
 
-            cache.delete_memoized(Item.get_children)
-
             next_url = request.headers.get('source_url', request.url)
             path = urlparse(next_url)[2]
             next_id = path[path.rfind('/') + 1:]
@@ -237,8 +239,15 @@ class ItemView(FlaskView):
             #Redefine the items to pass to template for PJAX
             if 'item' in path:
                 item = Item.query.get_or_404(next_id)
-            else: 
-                item = Item.find_by_title(next_id).first_or_404()
+                cache.delete_memoized(Item.get_item_and_children)
+            else:
+                cache.delete_memoized(Item.find_by_title)
+                next_id = urllib.unquote(next_id)
+                item = Item.find_by_title(next_id)
+
+            cache.delete_memoized(Item.ranked_posts)
+            cache.delete_memoized(Item.get_children)
+
             commentForm = self._commentForm(request)
             commentForm.text.data = '' #form data isn't clearing, so do it manually
 
@@ -267,6 +276,7 @@ class ItemView(FlaskView):
             db.session.commit()
 
             cache.delete_memoized(Item.get_children)
+            cache.delete_memoized(Item.get_item_and_children)
             key = make_template_fragment_key("item_text", vary_on=[item.__str__(), item.changed])
             cache.delete(key)
 
@@ -299,6 +309,8 @@ class ItemView(FlaskView):
 
         cache.delete_memoized(Item.voted_for)
         cache.delete_memoized(Item.get_children)
+        cache.delete_memoized(Item.get_item_and_children)
+        cache.delete_memoized(Item.ranked_posts)
 
         return jsonify(vote.serialize)
 

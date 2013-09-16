@@ -256,28 +256,28 @@ class Item(db.Model):
         sign = 1 if votes > 0 else -1 if votes < 0 else 0.1
         return round(order + sign, 7)
 
-    @classmethod
-    @cache.memoize(10)
-    def get_item_and_children(cls, id):
+    @staticmethod
+    @cache.memoize(60)
+    def get_item_and_children(id):
         """ Get an item
             Make sure everything we will need loads, since we are caching
         """
-        item = cls.query.options(
+        item = Item.query.options(
                                  db.joinedload('user'),
                                  db.joinedload('votes'),
                                 ).get_or_404(id)
         return item
 
-    @classmethod
-    @cache.memoize(10)
-    def ranked_posts(cls, page):
+    @staticmethod
+    @cache.memoize(60)
+    def ranked_posts(page):
         """ Returns the top ranked posts by post_score
             Load all necessary sub-queries so we can cache
             TODO: This should be an sqlalchemy query, but I kept breaking that =(
         """
-        items = cls.query.options(db.joinedload('user'), 
+        items = Item.query.options(db.joinedload('user'), 
                                   db.joinedload('votes')
-                                 ).filter_by(kind = 'post').order_by(cls.timestamp.desc())
+                                 ).filter_by(kind = 'post').order_by(Item.timestamp.desc())
         items_paged = items.paginate(page)
         start = items_paged.per_page * (items_paged.page - 1)
         end = items_paged.per_page + start
@@ -290,15 +290,15 @@ class Item(db.Model):
                 'next_num' : items_paged.next_num,
                 }
 
-
-    @classmethod
-    def find_by_title(cls, title, kind='page'):
+    @staticmethod
+    @cache.memoize(60*5)
+    def find_by_title(title, kind='page'):
         """ Find a page by title
             Replace _ with spaces. Used to make nice URLs
         """
         title = title.replace('_', ' ')
-        item_query = cls.query.filter_by(kind=kind).filter(
-                    func.lower(cls.title) == func.lower(title))
+        item_query = Item.query.filter_by(kind=kind).filter(
+                    func.lower(Item.title) == func.lower(title)).first_or_404()
         return item_query
 
 

@@ -8,7 +8,7 @@
     {% set comment = item %}
 {% endif -%}
 {%- if comment.parent.kind == 'page' %}
-{% set parent_url = url_for('page', title=comment.parent.title.lower()) %}
+{% set parent_url = url_for('page', title=comment.parent.title.lower().replace(' ', '_')) %}
 {% else -%}
 {% set parent_url = url_for('item', id=comment.parent_id) %}
 {% endif -%}
