@@ -19,6 +19,7 @@ class Config(object):
     SECURITY_RECOVERABLE = True
     SECURITY_DEFAULT_REMEMBER_ME = True
     SECURITY_SEND_REGISTER_EMAIL = False
+    SECURITY_SEND_PASSWORD_CHANGE_EMAIL = False
     SECURITY_EMAIL_SUBJECT_PASSWORD_RESET = 'DataNews: password reset instructions'
     SECURITY_EMAIL_SUBJECT_PASSWORD_NOTICE = 'DataNews: your password has been reset'
     SECURITY_EMAIL_SUBJECT_PASSWORD_CHANGE_NOTICE =  'DataNews: your password changed'
