@@ -72,6 +72,10 @@ class ItemView(FlaskView):
         db.session.add(item)
         db.session.commit()
 
+        cache.delete_memoized(Item.ranked_posts)
+        cache.delete_memoized(Item.get_item_and_children)
+        cache.delete_memoized(Item.get_children)
+
         return item
 
     def before_index(self, page=1):
@@ -99,6 +103,15 @@ class ItemView(FlaskView):
         """
         item = Item.get_item_and_children(id)
         commentForm = self._commentForm(request)
+
+        try:
+            print item.votes
+            print item.user.name
+        except:
+            print 'Could not get votes or user info'
+            cache.delete_memoized(Item.ranked_posts)
+            cache.delete_memoized(Item.get_item_and_children)
+            item = Item.get_item_and_children(id)
 
         title = item.title
         if item.kind == 'comment':
@@ -200,12 +213,11 @@ class ItemView(FlaskView):
             else:
                 kind = 'post'
 
+
             post = self._submit_item(url = form.url.data,
                                title = form.title.data, 
                                text = form.text.data,
                                kind = kind)
-
-            cache.delete_memoized(Item.ranked_posts)
 
             flash('Thanks for the submission!', category = 'success')
 
@@ -239,14 +251,10 @@ class ItemView(FlaskView):
             #Redefine the items to pass to template for PJAX
             if 'item' in path:
                 item = Item.query.get_or_404(next_id)
-                cache.delete_memoized(Item.get_item_and_children)
             else:
                 cache.delete_memoized(Item.find_by_title)
                 next_id = urllib.unquote(next_id)
                 item = Item.find_by_title(next_id)
-
-            cache.delete_memoized(Item.ranked_posts)
-            cache.delete_memoized(Item.get_children)
 
             commentForm = self._commentForm(request)
             commentForm.text.data = '' #form data isn't clearing, so do it manually
