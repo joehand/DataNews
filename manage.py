@@ -1,5 +1,5 @@
 # manage.py
-from data_news import app, db, user_datastore
+from data_news import app, db, user_datastore, cache
 from data_news.models import User, Role
 from flask.ext.script import Manager, Shell
 from flask.ext.s3 import create_all
@@ -95,10 +95,13 @@ def build_js():
 def upload_static():
     create_all(app, user=AccessKey, password=SecretKey)
 
+@manager.command
+def clear_cache():
+    with app.app_context():
+        cache.clear()
+
 def shell_context():
     return dict(app=app)   
-
- 
 
 #runs the app
 if __name__ == '__main__':
