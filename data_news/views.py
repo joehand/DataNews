@@ -4,9 +4,11 @@ from flask import render_template, request, flash, abort, \
 from flask.ext.security import login_required, current_user
 from flask.ext.classy import FlaskView, route
 from flask.ext.cache import make_template_fragment_key
+from sqlalchemy import or_
 from urlparse import urlparse
 from datetime import datetime
 import json
+import urllib
 from markdown import Markdown
 from markdownify import markdownify
 from bleach import clean
@@ -20,7 +22,7 @@ super_tags = ['a', 'p','em','strong','code','pre','blockquote','ul','li','ol','h
 
 @cache.cached(timeout=3600, key_prefix='all_pages')
 def get_pages():
-    pages = Item.query.filter_by(kind='page').order_by(Item.title)
+    pages = Item.query.filter(or_(Item.kind=='page', Item.kind=='external')).order_by(Item.title).all()
     return [page for page in pages]
 
 @app.before_first_request
