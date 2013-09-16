@@ -11,7 +11,7 @@
             <a href="{{item.url}}" data-pjax>{{item.title|safe}}</a> 
             <small class="text-muted">({{get_domain(item.url)}})</small>
             {%- else -%}
-            <a href="{{url_for('item_edit', id=item.id)}}" data-pjax>{{item.title|safe}}</a>
+            <a href="{{url_for('item', id=item.id)}}" data-pjax>{{item.title|safe}}</a>
             {% endif -%}
             {%- endcache -%}
         </h4>
