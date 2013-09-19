@@ -345,6 +345,7 @@ class UserView(FlaskView):
         return render_template('user.html', user=user, title=user.name)
 
     @route('/active', endpoint='active_user')
+    @login_required
     def active_user(self):
         return redirect(url_for('user', name=current_user.name))
 
