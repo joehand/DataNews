@@ -5,6 +5,10 @@ body {
 #main-container.loading {
 }
 
+/*************************
+    Top Navigation Bar 
+**************************/
+
 .navbar-static-top {
     width:100%;
 }
@@ -25,6 +29,10 @@ body {
 .navbar-toggle .icon-bar  {
     background-color:#7a62d3;
 }
+
+/*************************
+    Post Stlying (for all pages)
+**************************/
 
 .post {
 }
@@ -49,6 +57,10 @@ body {
     padding-left:15px;
 }
 
+
+/*************************
+    Comment Stlying (for all pages)
+**************************/
 
 .comment {
     margin-bottom:15px;
@@ -85,17 +97,22 @@ body {
 .next {
 }
 
-/* Comment Form and Input */
+
+/*************************
+    Comment Form Stlying (for all pages)
+**************************/
 .comment-form{
     margin:10px 0 30px;
 }
 
+/* Submit button hidden by default */
 .comment-form .submit *{
     height:0px;
     opacity:0;
     transition: all 0.5s ease-in; 
 }
 
+/* Show submit button */
 .comment-form.focus .submit *,
 .comment-form.comment-inline .submit *{
     height:auto;
@@ -112,6 +129,7 @@ textarea.comment-input {
     transition: all 0.3s ease-out; 
 }
 
+/* Styling for active/inline comment form */
 textarea.comment-input:focus, 
 textarea.comment-input:active, 
 .focus textarea.comment-input,
@@ -129,6 +147,11 @@ textarea.comment-input:active,
     margin-bottom:25px;
 }
 
+
+/*************************
+    Site Footer
+**************************/
+
 .site-footer hr {
     margin-bottom:0px;
 }
@@ -136,6 +159,11 @@ textarea.comment-input:active,
 .site-footer p {
     margin:15px 0;
 }
+
+
+/*************************
+    Media Queries
+**************************/
 
 @media (max-width: 767px) { 
     .navbar-nav>li.active a {
