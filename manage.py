@@ -11,7 +11,7 @@ from datetime import datetime
 manager = Manager(app)
 
 try: 
-    from tweets import TweetGetter
+    from data_news.twitter import TweetGetter
     tweets = TweetGetter()
 except:
     print 'cannot import twitter stuff'

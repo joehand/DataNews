@@ -16,17 +16,27 @@ from models import Item, User, Vote
 from forms import PostForm, CommentForm, UserForm, SearchForm
 
 
+# Tags allowed in comment forms
+# SuperAdmins get extra tags to create 'pages'
 md = Markdown()
 allowed_tags = ['a', 'p','em','strong','code','pre','blockquote','ul','li','ol']
-super_tags = ['a', 'p','em','strong','code','pre','blockquote','ul','li','ol','h3','h4','h5','h6','img']
+super_tags = ['a', 'p','em','strong','code','pre','blockquote',
+                'ul','li','ol','h3','h4','h5','h6','img']
 
-@cache.cached(timeout=3600, key_prefix='all_pages')
+@cache.cached(timeout=60*60*24*7, key_prefix='all_pages')
 def get_pages():
+    """ Get the pages to show in footer
+        These are special 'items' with kind=page or kind=external
+        External ones are links to, you guessed it, external websites
+    """
     pages = Item.query.filter(or_(Item.kind=='page', Item.kind=='external')).order_by(Item.title).all()
     return [page for page in pages]
 
 @app.before_first_request
 def before_first():
+    """ Create a permanent session
+        Track new login for authenticated users
+    """
     session.permanent = True
     if current_user.is_authenticated():
         current_user.current_login_at = datetime.utcnow()
@@ -34,18 +44,29 @@ def before_first():
 
 @app.before_request
 def before_request():
+    """ Get our footer pages. 
+        TODO: This should be done once in before_first but that wasn't working
+
+        We check if user is anonymous and first time visitor to show a "welcome" message
+    """
     g.pages = get_pages()
     if current_user.is_anonymous() and session.get('visited_index', False):
         session['return_anon'] = True
 
 
 class ItemView(FlaskView):
+    """ Our base ViewClass for any Item related endpoings (posts, comments, pages)
+        Base is root of app
+        Get routes and post routes are all separate functions
+    """
     route_base = '/'
 
     def _commentForm(self, request):
         return CommentForm(request.values, kind="comment")
 
     def _clean_text(self, text):
+        """ Cleans up submitted text from users
+        """
         if current_user.is_super:
             return clean(md.convert(text), super_tags)
         else:
@@ -54,6 +75,7 @@ class ItemView(FlaskView):
     def _submit_item(self, url=None, title=None, text=None, 
                             kind='comment', parent_id=None):
         """ Submits an item (post or comment) to db
+            TODO: Some kind of bad language filter?
         """ 
         text = self._clean_text(text)
 
@@ -72,6 +94,7 @@ class ItemView(FlaskView):
         db.session.add(item)
         db.session.commit()
 
+        # TODO : Need to delete cache of just related items, not all
         cache.delete_memoized(Item.ranked_posts)
         cache.delete_memoized(Item.get_item_and_children)
         cache.delete_memoized(Item.get_children)
@@ -79,6 +102,9 @@ class ItemView(FlaskView):
         return item
 
     def before_index(self, page=1):
+        """ Used to mark a visit of index page and remove welcome screen
+            TODO: Optimize by running this only when necessary (is that possible?)
+        """ 
         if current_user.is_anonymous() and not session.get('visited_index', False):
             session['visited_index'] = True
 
@@ -99,11 +125,11 @@ class ItemView(FlaskView):
     def get_item(self, id):
         """ View for a singular item (post or comment)
             Form is used to comment on that post or comment
-            TODO: Make form a part of this class?
         """
         item = Item.get_item_and_children(id)
         commentForm = self._commentForm(request)
 
+        #TODO: Having trouble with cache. Delete if we can't find votes/user info and get again
         try:
             print item.votes
             print item.user.name
@@ -155,7 +181,7 @@ class ItemView(FlaskView):
 
 
     @route('/item/edit/<int:id>', endpoint='item_edit')
-    @login_required  #change to user = owner
+    @login_required  #TODO: change to user = owner
     def get_edit(self, id):
         """ Get route for Editing an Item
             TODO: Make decorator for "owership" of item
@@ -175,8 +201,8 @@ class ItemView(FlaskView):
     @route('/reply/<int:id>', endpoint='item_comment')
     def get_comment_form(self, id):
         """
-            Get only the comment reply form and return via JSON
-            Requires the right header to be set (via js)
+            Returns the comment reply form html via JSON
+            Requires the header to be set (via js) : formJSON = True
         """
         if request.headers.get('formJSON', False):
             item = Item.query.get_or_404(id)
@@ -189,7 +215,7 @@ class ItemView(FlaskView):
     @route('/submit', endpoint='submit')
     @login_required
     def get_submit(self):
-        """ Submit a new post!
+        """ Get page for submitting new post!
         """
         form = PostForm(request.values, kind="post")
         return render_template('submit.html', form=form, title='Submit')
@@ -198,7 +224,7 @@ class ItemView(FlaskView):
     @route('/submit', methods=['POST'])
     @login_required
     def post_submit(self):
-        """ Post route for submitting
+        """ Post route for submitting new post
         """
         form = PostForm(request.values, kind="post")
         if form.validate_on_submit():
@@ -221,6 +247,7 @@ class ItemView(FlaskView):
 
             flash('Thanks for the submission!', category = 'success')
 
+            # Make new response and set url header for PJAX
             response = make_response(self.get_item(post.id))
             response.headers['X-PJAX-URL'] = url_for('item', id=post.id)
             return response
@@ -231,6 +258,8 @@ class ItemView(FlaskView):
     @route('/<title>', methods=['POST'])
     @login_required
     def post_item_comment(self, id=None, title=None):
+        """ Post route for creating new comment on any item or page
+        """
         commentForm = self._commentForm(request)
         if not id:
             id = Item.find_by_title(title).id
@@ -243,6 +272,7 @@ class ItemView(FlaskView):
                 flash('Something went wrong adding your comment. Please try again', category='error')
                 return render_template('submit.html', form=form, title='Submit')
 
+            # Figure out what url we submitted from so we can keep them there
             next_url = request.headers.get('source_url', request.url)
             path = urlparse(next_url)[2]
             next_id = path[path.rfind('/') + 1:]
@@ -252,6 +282,7 @@ class ItemView(FlaskView):
             if 'item' in path:
                 item = Item.query.get_or_404(next_id)
             else:
+                #TODO: Delete only necessary item
                 cache.delete_memoized(Item.find_by_title)
                 next_id = urllib.unquote(next_id)
                 item = Item.find_by_title(next_id)
@@ -259,9 +290,9 @@ class ItemView(FlaskView):
             commentForm = self._commentForm(request)
             commentForm.text.data = '' #form data isn't clearing, so do it manually
 
+            # Make new response and set url header for PJAX
             response = make_response(render_template('item.html',
                                     item = item, form = commentForm, title=item.title))
-
             response.headers['X-PJAX-URL'] = next_url
             return response
         else:
@@ -283,6 +314,7 @@ class ItemView(FlaskView):
             item = db.session.merge(item)
             db.session.commit()
 
+            #TODO: Delete only necessary items
             cache.delete_memoized(Item.get_children)
             cache.delete_memoized(Item.get_item_and_children)
             key = make_template_fragment_key("item_text", vary_on=[item.__str__(), item.changed])
@@ -315,6 +347,7 @@ class ItemView(FlaskView):
         db.session.add(vote)
         db.session.commit()
 
+        #TODO: Delete only necessary items
         cache.delete_memoized(Item.voted_for)
         cache.delete_memoized(Item.get_children)
         cache.delete_memoized(Item.get_item_and_children)
@@ -325,6 +358,7 @@ class ItemView(FlaskView):
 class UserView(FlaskView):
     """ Get the beautiful user page
         Also a user can edit their own info here
+        Base url is /user
         TODO: Add about section? And gravatar option?
               If we do more complex stuff, 
               allow use to see 'public' profile via request arg
@@ -333,11 +367,16 @@ class UserView(FlaskView):
     @route('/')
     @route('/<int:page>')
     def index(self, page=1):
+        """ Show list of all users. Pretty useless right now
+        """
         users_obj = User.query.paginate(page)
         return render_template('list.html', items=users_obj)
 
     @route('/<name>', endpoint='user')
     def get(self, name):
+        """ Show specific user
+            Put in form for editing if user = current user
+        """
         user = User.find_user_by_name(name).first_or_404()
         if user == current_user:
             form = UserForm()
@@ -347,9 +386,14 @@ class UserView(FlaskView):
     @route('/active', endpoint='active_user')
     @login_required
     def active_user(self):
+        """ Quick link for going to profile of current user
+        """
         return redirect(url_for('user', name=current_user.name))
 
     def post(self, name):
+        """ Submit changes for user.
+            NOT used to create a new user (that is done via flask-security)
+        """
         user = User.find_user_by_name(name).first_or_404()
         form = UserForm()
         if user == current_user and form.validate_on_submit(): 
@@ -366,6 +410,7 @@ class UserView(FlaskView):
             flash('Your edits are saved, thanks.', category = 'info')
             return redirect(url_for('user', name=form.name.data)) 
 
+#Register our View Classes
 ItemView.register(app)
 UserView.register(app)
 

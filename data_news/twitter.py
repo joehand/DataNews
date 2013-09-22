@@ -18,6 +18,12 @@ TWITTER_OAUTH_SECRET = os.environ.get('TWITTER_OAUTH_SECRET')
 
 md = Markdown()
 class TweetGetter():
+    """ Class to get new tweets via api
+        Can get favorite tweets or mentions
+        Keeps track of max ids for both in DB
+        Uses Twython to connect to twitter API
+        Favorites get posted as user DataNews
+    """
     TWITTER_USER = User.query.filter_by(name='DataNews').first()
     api =  Twython(TWITTER_KEY, 
                    TWITTER_SECRET,
@@ -25,6 +31,8 @@ class TweetGetter():
                    TWITTER_OAUTH_SECRET)
 
     def __init__(self):
+        """ Make sure we have an entry in the database
+        """
         twitter = Twitter.query.limit(1).first()
         if twitter is None:
             twitter = Twitter(mention_id=0,fav_id=0)
@@ -34,14 +42,18 @@ class TweetGetter():
         self.mention_id = twitter.mention_id
         self.fav_id = twitter.fav_id
 
-    def check_mention_id(self, tweetid):
+    def _check_mention_id(self, tweetid):
+        """ Check where we are for mentions compared to new tweets
+        """
         if self.mention_id < tweetid:
             print 'updating max mention id \n'
             self.mention_id = tweetid
             self.twitter.mention_id = tweetid
             db.session.commit()
 
-    def check_fav_id(self, tweetid):
+    def _check_fav_id(self, tweetid):
+        """ Check where we are for favorites compared to new tweets
+        """
         if self.fav_id < tweetid:
             print 'updating max fav id \n'
             self.fav_id = tweetid
@@ -49,8 +61,9 @@ class TweetGetter():
             db.session.commit()
 
 
-    def get_title_url(self, url):
-        #This retrieves the webpage content
+    def _get_title_url(self, url):
+        """ Visits page to get title and real url from twitter URL
+        """
         print 'getting title and content'
         br = Browser()
         try:
@@ -60,18 +73,22 @@ class TweetGetter():
         url = res.geturl()
         data = res.get_data() 
 
-
-        #This parses the content
+        #Parse the content
         soup = BeautifulSoup(data, from_encoding="UTF-8")
         title = soup.find('title')
 
-        #This outputs the content :)
+        #Outputs the content :)
         return {
                 'title' : title.text.encode('utf-8'),
                 'url' : url.encode('utf-8'),
                 }
 
-    def clean_tweet_text(self, tweet):
+    def _clean_tweet_text(self, tweet):
+        """ Clean up the tweet text
+            Replaces short urls with display urls
+            Makes urls links
+            Adds a source
+        """
         text = tweet['text']
         entities = tweet['entities']
         user = tweet['user']
@@ -85,11 +102,18 @@ class TweetGetter():
         text = '<p>' + text + '<small> ' + source + '</small></p>'
         return text.encode('utf-8')
         
-    def process_tweets(self, tweets, mentions=False):
+    def _process_tweets(self, tweets, mentions=False):
+        """ Process tweets we got from API
+            - Gets title, url
+            - Cleans tweet text
+            - Finds user
+            - Submits to DB as new posts
+        """
         for tweet in tweets:
+            # TODO: Get urls besides just first, or deal with this better
             url = tweet['entities']['urls'][0]['expanded_url']
 
-            content = self.get_title_url(url)
+            content = self._get_title_url(url)
 
             if not content:
                 print 'silly robots will not let us visit'
@@ -99,14 +123,17 @@ class TweetGetter():
             url = content['url']
             post = Item.query.filter_by(url = url).first()
             if post:
+                #TODO: Add as comment to post?
                 print 'duplicate post'
                 continue
 
-            text = self.clean_tweet_text(tweet)
+            text = self._clean_tweet_text(tweet)
             title = content['title']
             time = datetime.strptime(tweet['created_at'], '%a %b %d %H:%M:%S +0000 %Y')
             twitter_username = tweet['user']['screen_name']
 
+            # Make the tweet text the title (minus links)
+            # TODO: Remove user name too
             if not title:
                 title = re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*', '', tweet['text'])
 
@@ -137,21 +164,23 @@ class TweetGetter():
             print 'post added'
 
             if mentions:
-                self.check_mention_id(tweet['id'])
+                self._check_mention_id(tweet['id'])
             else:
-                self.check_fav_id(tweet['id'])
+                self._check_fav_id(tweet['id'])
         return
 
 
     def get_mentions(self):
+        """ Get mentions and run through processor
+        """
         print 'getting mentions'
         if self.mention_id > 0:
-            self.process_tweets(
+            self._process_tweets(
                 self.api.get_mentions_timeline(since_id = self.mention_id, count=200),
                 mentions=True
             )
         else:
-            self.process_tweets(
+            self._process_tweets(
                 self.api.get_mentions_timeline(count=200),
                 mentions=True
             )
@@ -159,11 +188,13 @@ class TweetGetter():
         return
 
     def get_favorites(self):
+        """ Get favs and run through processor
+        """
         print 'getting favs'
         if self.fav_id > 0:
-            self.process_tweets(
+            self._process_tweets(
                 self.api.get_favorites(since_id = self.fav_id, count=200)
             )
         else:
-            self.process_tweets(self.api.get_favorites(count=200))
+            self._process_tweets(self.api.get_favorites(count=200))
         return
