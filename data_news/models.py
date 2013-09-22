@@ -23,6 +23,9 @@ def dump_datetime(value):
     return [value.strftime("%Y-%m-%d"), value.strftime("%H:%M:%S")]
 
 def paginate(query, page, per_page=20, error_out=True):
+    """
+       Paginate query if we can't use flask-sqlalchemy query (we use regular sqlalchemy one instead)
+    """
     if error_out and page < 1:
         abort(404)
     items = query.limit(per_page).offset((page - 1) * per_page).all()
@@ -59,6 +62,7 @@ class Vote(db.Model):
             the voting user (user_from) 
             and the author (user_to)
             and the timestamp =)
+        TODO: Add a value (if we want down votes)
     """
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.DateTime)
@@ -130,7 +134,7 @@ class User(db.Model, UserMixin):
     @classmethod
     def find_user_by_name(cls, name):
         """ Finds user by name, making sure to look in all lowercase
-            Returns Query object not user! Then can use first_or_404 if I want.
+            Returns Query object not user! Then can use first_or_404.
         """
         user_query = cls.query.filter(
                     func.lower(cls.name) == func.lower(name))
@@ -139,7 +143,7 @@ class User(db.Model, UserMixin):
     @classmethod
     def find_user_by_email(cls, email):
         """ Finds user by EMAIL, making sure to look in all lowercase
-            Returns Query object not user! Then can use first_or_404 if I want.
+            Returns Query object not user! Then can use first_or_404.
         """
         user_query = cls.query.filter(
                     func.lower(cls.email) == func.lower(email))
@@ -148,7 +152,7 @@ class User(db.Model, UserMixin):
     @classmethod
     def find_user_by_twitter(cls, twitter):
         """ Finds user by EMAIL, making sure to look in all lowercase
-            Returns Query object not user! Then can use first_or_404 if I want.
+            Returns Query object not user! Then can use first_or_404.
         """
         user_query = cls.query.filter(
                     func.lower(cls.twitter_handle) == func.lower(twitter))
@@ -174,11 +178,13 @@ class User(db.Model, UserMixin):
 class Item(db.Model):
     """ An item is any kind of post or comment
         It should either have a url/title or have text
-        TODO: Right now kind is just a simple string ('post' or 'comment')
+        TODO: Right now kind is just a simple string ('post' or 'comment' or 'page' or 'external')
               It should probably be another table, similar to Role
         TODO?: There is no easy way to get the parent post for a deep nested comment
                You have to do recursion on each parent. Should I make this a column?
                parent currently refers to just the immediate parent (post or comment)
+        TODO: Children is not working great with caching. How to make that nicer?
+        TODO: user/votes is not working great with caching. How to make that nicer?
     """
 
     id = db.Column(db.Integer, primary_key = True)
@@ -229,6 +235,8 @@ class Item(db.Model):
 
     @cache.memoize(60*5)
     def voted_for(self, user_id):
+        """ Check if an item was voted for by a user
+        """
         vote = Vote.query.filter_by(item_id = self.id, user_from_id = user_id).first()
         if vote:
             return True
@@ -236,7 +244,9 @@ class Item(db.Model):
 
     @property
     def post_score(self):
-        """The hot formula from Reddit."""
+        """Kinda from hot formula from Reddit.
+           TODO: Actually think about this
+        """
         votes = len(self.votes)
         comments = len(Item.query.filter_by(parent_id = self.id).all())
         date = self.timestamp
@@ -248,7 +258,9 @@ class Item(db.Model):
 
     @property
     def comment_score(self):
-        """Give comments a score based on votes, replies."""
+        """ Give comments a score based on votes, replies.
+            TODO: Use brain.
+        """
         votes = len(self.votes)
         comments = len(Item.query.filter_by(parent_id = self.id).all())
         s = votes * comments/10
@@ -261,6 +273,7 @@ class Item(db.Model):
     def get_item_and_children(id):
         """ Get an item
             Make sure everything we will need loads, since we are caching
+            TODO: Still not playing nice with cache
         """
         item = Item.query.options(
                                  db.joinedload('user'),
@@ -272,8 +285,9 @@ class Item(db.Model):
     @cache.memoize(60)
     def ranked_posts(page):
         """ Returns the top ranked posts by post_score
-            Load all necessary sub-queries so we can cache
-            TODO: This should be an sqlalchemy query, but I kept breaking that =(
+            (Kinda) Load all necessary sub-queries so we can cache
+            TODO: This should be an combined with post_score to be a 
+                  sqlalchemy query, but I keep breaking that =(
         """
         items = Item.query.options(db.joinedload('user'), 
                                   db.joinedload('votes')

@@ -36,6 +36,9 @@ class SearchForm(Form):
 
 class UserForm(Form):
     """ Form to edit the user
+        Used only on editing, not creation
+        TODO: Combine this and the form below
+        TODO: This is not DRY
     """
     name = TextField('Name',  validators=[required()], description="Public display name (Unique)")
     email = EmailField('Email',   validators=[optional(), email()])
@@ -110,6 +113,7 @@ class UserForm(Form):
 class ExtendedRegisterForm(RegisterForm):
     """ Extend the Flask-Security registration form
         Makes email optional and adds a Name
+        TODO: This is not DRY
     """
     name = TextField('Display Name',  validators=[required()], description="Will be public")
     email = EmailField('Email (Optional)',  validators=[optional(), email()], description="Private, used for password reset")
