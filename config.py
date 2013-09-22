@@ -2,15 +2,12 @@ import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
 class Config(object):
+    """ This is the default configuration used in both production and developement
+    """
     # administrator list
+    # First administrator is automatically added with db_create
     ADMINS = ['joe.a.hand@gmail.com']
-
-    DEBUG = False
     TESTING = False
-    SECRET_KEY = 'this_is_so_secret' #used for development, reset in prod
-
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db')
-    SQLALCHEMY_MIGRATE_REPO = os.path.join(basedir, 'db_repository')
 
     #Flask-Security Config
     SECURITY_TRACKABLE = True
@@ -28,12 +25,13 @@ class Config(object):
 
     ASSETS_AUTO_BUILD = True
     JS_VERSION = 'v0.1'
-
-    S3_BUCKET_NAME = 'data_news'
     
 class ProductionConfig(Config):
+    """ Production Config, overwrites above as necessary
+    """
     DEBUG = False
     SECRET_KEY = os.environ.get('SECRET_KEY')
+
     SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL')
 
     SECURITY_PASSWORD_SALT = os.environ.get('PASSWORD_SALT')
@@ -47,17 +45,16 @@ class ProductionConfig(Config):
 
     ASSETS_AUTO_BUILD = False
     SEND_FILE_MAX_AGE_DEFAULT = 2592000
-    
-    S3_USE_CACHE_CONTROL = True
-    S3_CACHE_CONTROL = 2592000
 
 class DevelopmentConfig(Config):
     DEBUG = True
+    SECRET_KEY = 'this_is_so_secret' #used for development, reset in prod
+
+    SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'app.db')
 
     SECURITY_PASSWORD_SALT = '/2aX16zPnnIgfMwkOjGX4S'
 
     DEBUG_TB_INTERCEPT_REDIRECTS = False
-
     DEBUG_TB_PANELS = (
         'flask.ext.debugtoolbar.panels.versions.VersionDebugPanel',
         'flask.ext.debugtoolbar.panels.timer.TimerDebugPanel',

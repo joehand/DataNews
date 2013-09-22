@@ -8,11 +8,12 @@ from flask.ext.assets import Environment
 from flask.ext.compress import Compress
 from datetime import datetime
 from flask.ext.cacheify import init_cacheify
-from flask.ext.s3 import FlaskS3
 
 app = Flask(__name__, static_folder='static', static_url_path='')
 
+#Set our configuration
 if os.environ.get('HEROKU_PROD', False):
+    #Add a config to know if we are on heroku
     app.config['HEROKU_PROD'] = True
     app.config.from_object('config.ProductionConfig')
 else:
@@ -20,6 +21,7 @@ else:
 
 # Create database connection object
 db = SQLAlchemy(app)
+# Init the caching
 cache = init_cacheify(app)
 
 from models import User, Role
@@ -45,19 +47,22 @@ def user_registered_sighandler(app, user, confirm_token):
 mail = Mail(app)
 assets = Environment(app)
 
+#If we are in prod, don't autobuild
 assets.auto_build = app.config['ASSETS_AUTO_BUILD']
 assets.manifest = 'file'
 
+#Add gzip compression
 compress = Compress(app)
-#s3 = FlaskS3(app)
 
 # Set tempalate globals
 from template_utils import get_domain, pretty_date
 app.jinja_env.globals['get_domain'] = get_domain
 app.jinja_env.globals['pretty_date'] = pretty_date
 
+#Import all the other fun stuff
 from data_news import views, models, admin_views, api
 
+#Set up logging or debugging
 if app.debug:
     from flask_debugtoolbar import DebugToolbarExtension
     toolbar = DebugToolbarExtension(app)
