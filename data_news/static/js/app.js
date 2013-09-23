@@ -2,11 +2,11 @@ requirejs.config({
     paths: {
         'model'              : 'model', //shortcuts for model/view files
         'view'               : 'view',
-        'jquery'             : 'lib/jquery-2.0.3',
-        'underscore'         : 'lib/underscore',
-        'backbone'           : 'lib/backbone',
-        'bootstrap'          : 'lib/bootstrap',
-        'pjax'               : 'lib/jquery.pjax',
+        'jquery'             : 'libs/jquery-2.0.3',
+        'underscore'         : 'libs/underscore',
+        'backbone'           : 'libs/backbone',
+        'bootstrap'          : 'libs/bootstrap',
+        'pjax'               : 'libs/jquery.pjax',
     },
     shim: {
         backbone: {
