@@ -123,11 +123,13 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, votes) {
             }
         },
 
-        initialize: function() {
+        initialize: function(options) {
             //console.log('AppView init')
 
             // Start up child views and some ajax magic
-            this.initPjax();
+            if (options.pjax) {
+                this.initPjax();
+            }
             this.initAllItems();
 
             // render, i guess?

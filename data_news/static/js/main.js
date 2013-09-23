@@ -12,5 +12,5 @@ define([
     'pjax'
 ], function (Backbone, _, $, AppModel, AppView) {
     // This file is getting a bit complex ;)
-    var appView = new AppView();
+    var appView = new AppView({'pjax':true});
 });
