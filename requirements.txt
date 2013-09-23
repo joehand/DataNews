@@ -30,7 +30,7 @@ cssmin==0.1.4
 gevent==0.13.8
 greenlet==0.4.1
 gunicorn==18.0
-html5lib==1.0b3
+html5lib==0.95
 itsdangerous==0.23
 markdownify==0.4.0
 mechanize==0.2.5
