@@ -1,7 +1,9 @@
 # manage.py
-from data_news import app, db, user_datastore, cache
-from data_news.models import User, Role
+from data_news import app
+from data_news import db, cache
+from data_news.user import User, Role
 from flask.ext.script import Manager, Shell
+from flask.ext.security import SQLAlchemyUserDatastore
 from flask.ext.security.utils import encrypt_password
 import os
 import gzip
@@ -10,8 +12,9 @@ from datetime import datetime
 
 manager = Manager(app)
 
+user_datastore = SQLAlchemyUserDatastore(db, User, Role)
 try: 
-    from data_news.twitter import TweetGetter
+    from data_news.background import TweetGetter
     tweets = TweetGetter()
 except:
     print 'cannot import twitter stuff'
@@ -43,6 +46,7 @@ def db_create():
         Add some default roles
         Create an initial admin user
     """
+    db.drop_all()
     db.create_all()
     roles = [('user', 'Generic user role'),
              ('admin', 'Regular Admin'),

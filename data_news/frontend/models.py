@@ -1,59 +1,12 @@
-from data_news import app, db, cache
-from flask.ext.security import UserMixin, RoleMixin
+from data_news import db, cache
+
+from ..utils import epoch_seconds
+
 from flask.ext.sqlalchemy import Pagination
-from sqlalchemy import func, case
-from sqlalchemy.ext.hybrid import hybrid_property
+from sqlalchemy import func
+
 from datetime import datetime
 from math import log
-
-epoch = datetime(1970, 1, 1)
-ILLEGAL_NAMES = ['active']
-
-@cache.memoize(60*5)
-def epoch_seconds(date):
-    """Returns the number of seconds from the epoch to date."""
-    td = date - epoch
-    return td.days * 86400 + td.seconds + (float(td.microseconds) / 1000000)
-
-@cache.memoize(60*5)
-def dump_datetime(value):
-    """Deserialize datetime object into string form for JSON processing."""
-    if value is None:
-        return None
-    return [value.strftime("%Y-%m-%d"), value.strftime("%H:%M:%S")]
-
-def paginate(query, page, per_page=20, error_out=True):
-    """
-       Paginate query if we can't use flask-sqlalchemy query (we use regular sqlalchemy one instead)
-    """
-    if error_out and page < 1:
-        abort(404)
-    items = query.limit(per_page).offset((page - 1) * per_page).all()
-    if not items and page != 1 and error_out:
-        abort(404)
-
-    # No need to count if we're on the first page and there are fewer
-    # items than we expected.
-    if page == 1 and len(items) < per_page:
-        total = len(items)
-    else:
-        total = query.order_by(None).count()
-
-    return Pagination(query, page, per_page, total, items)
-
-
-# Define models
-roles_users = db.Table('roles_users',
-        db.Column('user_id', db.Integer(), db.ForeignKey('user.id')),
-        db.Column('role_id', db.Integer(), db.ForeignKey('role.id')))
-
-class Role(db.Model, RoleMixin):
-    id = db.Column(db.Integer(), primary_key=True)
-    name = db.Column(db.String(80), unique=True)
-    description = db.Column(db.String(255))
-
-    def __str__(self):
-        return self.name
 
 class Vote(db.Model):
     """ We keep track of very vote
@@ -81,99 +34,6 @@ class Vote(db.Model):
            'timestamp' : dump_datetime(self.timestamp),
            'item_id' : self.item_id,
        }
-
-class User(db.Model, UserMixin):
-    """ Users!
-        Nothing too crazy here
-        The confirmed_at through login_count columns are updated by Flask-Security
-    """
-    id = db.Column(db.Integer, primary_key=True)
-    email = db.Column(db.String(255))
-    password = db.Column(db.String(255))
-    name = db.Column(db.String(255), unique=True)
-    active = db.Column(db.Boolean())
-    created_at = db.Column(db.DateTime())
-    confirmed_at = db.Column(db.DateTime())
-    last_login_at = db.Column(db.DateTime())
-    current_login_at = db.Column(db.DateTime())
-    last_login_ip = db.Column(db.String(255))
-    current_login_ip = db.Column(db.String(255))
-    login_count = db.Column(db.Integer)
-    twitter_handle = db.Column(db.String(20))
-    karma = db.relationship('Vote', backref="user_to", primaryjoin="Vote.user_to_id==User.id")
-    votes = db.relationship('Vote', backref="user_from", primaryjoin="Vote.user_from_id==User.id")
-    roles = db.relationship('Role', secondary=roles_users,
-                            backref=db.backref('users', lazy='dynamic'))
-
-    def __repr__(self):
-        return '<Item %r>' % (self.name)
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def avatar(self, size):
-        return 'http://www.gravatar.com/avatar/' + md5(self.email).hexdigest() + '?d=mm&s=' + str(size)
-
-    @property
-    @cache.memoize(60*5)
-    def is_admin(self):
-        for role in self.roles:
-            if role.name == 'admin' or role.name == 'super':
-                return True
-        return False
-
-    @property
-    @cache.memoize(60*5)
-    def is_super(self):
-        for role in self.roles:
-            if role.name == 'super':
-                return True
-        return False
-
-    @classmethod
-    def find_user_by_name(cls, name):
-        """ Finds user by name, making sure to look in all lowercase
-            Returns Query object not user! Then can use first_or_404.
-        """
-        user_query = cls.query.filter(
-                    func.lower(cls.name) == func.lower(name))
-        return user_query
-
-    @classmethod
-    def find_user_by_email(cls, email):
-        """ Finds user by EMAIL, making sure to look in all lowercase
-            Returns Query object not user! Then can use first_or_404.
-        """
-        user_query = cls.query.filter(
-                    func.lower(cls.email) == func.lower(email))
-        return user_query
-
-    @classmethod
-    def find_user_by_twitter(cls, twitter):
-        """ Finds user by EMAIL, making sure to look in all lowercase
-            Returns Query object not user! Then can use first_or_404.
-        """
-        user_query = cls.query.filter(
-                    func.lower(cls.twitter_handle) == func.lower(twitter))
-        return user_query
-
-    @classmethod
-    def make_unique_name(cls, name):
-        """ Checks if name is being used. If it is, returns a new version.
-        """
-        if name in ILLEGAL_NAMES:
-            name = name + str(1)
-        if not cls.find_user_by_name(name).first():
-            return name
-        version = 2
-        while True:
-            new_name = name + str(version)
-            if not cls.find_user_by_name(new_name).first():
-                break 
-            version += 1
-        return new_name
-
 
 class Item(db.Model):
     """ An item is any kind of post or comment
@@ -315,12 +175,4 @@ class Item(db.Model):
                     func.lower(Item.title) == func.lower(title)).first_or_404()
         return item_query
 
-
-class Twitter(db.Model):
-    """ Keep track of a few max id's for fetching via Twitter ID.
-        Should only be one row in this table
-    """
-    id = db.Column(db.Integer, primary_key = True)
-    mention_id = db.Column(db.BigInteger)
-    fav_id = db.Column(db.BigInteger)
 

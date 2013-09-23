@@ -5,7 +5,7 @@
   {%- if kind == 'external'%} 
   <li class='{{cls}} pjax-active'><a href="{{url}}" data-pjax>{{title}}</a></li>
   {% else -%}
-  <li class='{{cls}} pjax-active'><a href="{{url_for('page', title=title.lower().replace(' ', '_'))}}" data-pjax>{{title}}</a></li>
+  <li class='{{cls}} pjax-active'><a href="{{url_for('frontend.page', title=title.lower().replace(' ', '_'))}}" data-pjax>{{title}}</a></li>
   {% endif -%}
 {% endmacro %}
 

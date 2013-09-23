@@ -1,38 +1,15 @@
-from models import User, ILLEGAL_NAMES
+from .models import User
+from ..utils import NAME_LEN_MIN, NAME_LEN_MAX, ILLEGAL_NAMES
+
 from flask.ext.wtf import Form
-from wtforms import TextField, SelectMultipleField, HiddenField, TextAreaField
-from flask_wtf.html5 import URLField, EmailField
-from wtforms.validators import url, required, email, optional
-from flask_security.forms import RegisterForm, LoginForm
-from flask_security.utils import verify_and_update_password
+from flask.ext.wtf.html5 import URLField, EmailField
+from wtforms import TextField
+from wtforms.validators import required, email, optional
 from flask.ext.security import current_user
-from sqlalchemy import func
+from flask.ext.security.forms import RegisterForm, LoginForm
+from flask.ext.security.utils import verify_and_update_password
+
 import re
-
-
-class PostForm(Form):
-    """ Form to submit a Post
-        TODO: Put a note in about Markdown formatting?
-    """
-    title = TextField('Title', description='',
-                       validators=[required()])
-    url = URLField('URL', description='',
-                       validators=[url(), optional()])
-    text = TextAreaField('Text', description='',
-                       validators=[])
-    kind = TextField('Kind')
-
-class CommentForm(Form):
-    """ Form to submit a Comment
-        TODO: Put a note in about Markdown formatting?
-    """
-    text = TextAreaField('',validators=[required()])
-    kind = HiddenField('')
-    parent_id = HiddenField('')
-    edit = HiddenField('')
-
-class SearchForm(Form):
-    search = TextField('search', validators = [required()])
 
 class UserForm(Form):
     """ Form to edit the user
@@ -80,8 +57,8 @@ class UserForm(Form):
             self.name.errors.append('Must have at least one letter or number')
             return False
 
-        if not 1 < len(name) < 16:
-            self.name.errors.append('Must be between 2 and 15 characters')
+        if not NAME_LEN_MIN < len(name) + 1 < NAME_LEN_MAX:
+            self.name.errors.append('Must be between %s and %s characters'% (NAME_LEN_MIN,NAME_LEN_MAX)) 
             return False
 
         if name.lower() in ILLEGAL_NAMES:
@@ -145,8 +122,8 @@ class ExtendedRegisterForm(RegisterForm):
             self.name.errors.append('Must have at least one letter or number')
             return False
 
-        if not 1 < len(name) < 16:
-            self.name.errors.append('Must be between 2 and 15 characters')
+        if not NAME_LEN_MIN < len(name) + 1 < NAME_LEN_MAX:
+            self.name.errors.append('Must be between %s and %s characters'% (NAME_LEN_MIN,NAME_LEN_MAX)) 
             return False
 
         user = User.find_user_by_name(name).first()
@@ -186,4 +163,3 @@ class ExtendedLoginForm(LoginForm):
             self.name.errors.append('Account has been disabled')
             return False
         return True
-

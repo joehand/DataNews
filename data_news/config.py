@@ -4,6 +4,8 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config(object):
     """ This is the default configuration used in both production and developement
     """
+    PROJECT = 'datanews'
+
     # administrator list
     # First administrator is automatically added with db_create
     ADMINS = ['joe.a.hand@gmail.com']
@@ -24,7 +26,7 @@ class Config(object):
     SECURITY_PASSWORD_HASH = 'bcrypt'
 
     ASSETS_AUTO_BUILD = True
-    JS_VERSION = 'v0.1'
+    JS_VERSION = 'v0.01'
     
 class ProductionConfig(Config):
     """ Production Config, overwrites above as necessary

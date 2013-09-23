@@ -1,6 +1,9 @@
-from data_news import app
 from data_news import db
-from data_news.models import User, Item, Vote, Twitter
+
+from ..user import User
+from ..frontend import Item, Vote
+from .models import Twitter
+
 from twython import Twython
 from pprint import pprint
 from markdown import Markdown
@@ -24,7 +27,11 @@ class TweetGetter():
         Uses Twython to connect to twitter API
         Favorites get posted as user DataNews
     """
-    TWITTER_USER = User.query.filter_by(name='DataNews').first()
+    try:
+        TWITTER_USER = User.query.filter_by(name='DataNews').first()
+    except:
+        TWITTER_USER = None
+
     api =  Twython(TWITTER_KEY, 
                    TWITTER_SECRET,
                    TWITTER_OAUTH_TOKEN, 
@@ -141,8 +148,10 @@ class TweetGetter():
               user = User.query.filter_by(twitter_handle=twitter_username).first()
               if not user:
                 continue # skip the mention if we don't know who its from
-            else:
+            elif self.TWITTER_USER:
               user = self.TWITTER_USER
+            else:
+                continue
 
             print 'Adding Post:'
             print '\t' + title

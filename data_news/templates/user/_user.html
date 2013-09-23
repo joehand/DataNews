@@ -1,14 +1,14 @@
             <div class="panel panel-default">
               <div class="panel-heading">
                 <h3 class="panel-title">User: <b>{{item.name}}</b>
-                  <a class="pull-right" href="{{url_for('items', user_id=item.id, kind='comment')}}" data-pjax>Comments</a>
+                  <a class="pull-right" href="{{url_for('frontend.items', user_id=item.id, kind='comment')}}" data-pjax>Comments</a>
                   <span class="pull-right">&nbsp;|&nbsp;</span>
-                  <a class="pull-right" href="{{url_for('items', user_id=item.id, kind='post')}}" data-pjax>Posts</a>
+                  <a class="pull-right" href="{{url_for('frontend.items', user_id=item.id, kind='post')}}" data-pjax>Posts</a>
                 </h3>
               </div>
               <div class="panel-body">
                   <div class="row">
-                    <p class="col-md-12 col-lg-12">Created: {{pretty_date(item.created_at)}}</p>
+                    <p class="col-md-12 col-lg-12">Created: {{item.created_at|time_ago}}</p>
                     <p class="col-md-12 col-lg-12">Karma: {{item.karma|length}}</p>
                     <p class="col-md-12 col-lg-12">Votes: {{item.votes|length}}</p>
                   </div>

@@ -3,7 +3,7 @@
 {%- block content -%}
             {%- if current_user.is_anonymous() and not session.return_anon %}
             <div class="row welcome-msg">
-                {% include "_welcome.html" %}
+                {% include "item/_welcome.html" %}
             </div>
             {% endif -%}
             <div class="row post-list">
@@ -14,7 +14,7 @@
                 {% elif item.kind == 'comment' %}
                     {% include "item/_comment.html" %}
                 {% elif item.__tablename__ == 'user' %}
-                    {% include "_user.html" %}
+                    {% include "user/_user.html" %}
                 {% endif -%}
                 </div>
             {% endfor -%}
@@ -23,9 +23,9 @@
             <div class="row next">
                 <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
                 {%- if "/items" in request.path  %}
-                <a href="{{ url_for('items', page = items['next_num'], **filters) }}" data-pjax>More</a>
+                <a href="{{ url_for('frontend.items', page = items['next_num'], **filters) }}" data-pjax>More</a>
                 {% else %}
-                <a href="{{ url_for('index', page = items['next_num']) }}" data-pjax>More</a>
+                <a href="{{ url_for('frontend.index', page = items['next_num']) }}" data-pjax>More</a>
                 {% endif -%}
             </div>
             </div>

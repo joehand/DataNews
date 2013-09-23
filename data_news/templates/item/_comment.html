@@ -8,9 +8,9 @@
     {% set comment = item %}
 {% endif -%}
 {%- if comment.parent.kind == 'page' %}
-{% set parent_url = url_for('page', title=comment.parent.title.lower().replace(' ', '_')) %}
+{% set parent_url = url_for('frontend.page', title=comment.parent.title.lower().replace(' ', '_')) %}
 {% else -%}
-{% set parent_url = url_for('item', id=comment.parent_id) %}
+{% set parent_url = url_for('frontend.item', id=comment.parent_id) %}
 {% endif -%}
 {%- if current_user.is_authenticated() and comment.user_id == current_user.id%}    
     {% set owner = 'true' %}
@@ -18,14 +18,14 @@
 <div class="item comment {% if not item_page %}col-md-{{width}} col-lg-{{width}} col-sm-{{width}} col-xs-{{width}} {% if depth %}col-lg-offset-{{depth}} col-md-offset-{{depth}} col-sm-offset-{{depth}}{% endif %}{% endif %}" id="item-{{comment.id}}" data-id="{{comment.id}}" data-user="{{comment.user_id}}">
     <div class="row comment-info">
         {%- include "item/_vote.html" -%}
-        By {% cache 60*60*5, 'user', comment.user.name %}<a href="{{url_for('user', name=comment.user.name)}}" data-pjax>{{comment.user.name}}</a>{% endcache %}
+        By {% cache 60*60*5, 'user', comment.user.name %}<a href="{{url_for('user.user', name=comment.user.name)}}" data-pjax>{{comment.user.name}}</a>{% endcache %}
         {%- if item_page %}
         <small class="text-muted"> (<a href="{{parent_url}}" data-pjax>parent</a>)</small>
         {%- else %}
-         <a href="{{url_for('item', id=comment.id)}}" data-pjax>{{pretty_date(comment.timestamp)}}</a>
+         <a href="{{url_for('frontend.item', id=comment.id)}}" data-pjax>{{comment.timestamp|time_ago}}</a>
         {%- endif -%}
         {%- if owner and not edit %}
-            | <a href="{{url_for('item_edit', id=comment.id)}}" data-pjax>Edit</a>
+            | <a href="{{url_for('frontend.item_edit', id=comment.id)}}" data-pjax>Edit</a>
         {% endif -%}
     </div>
     <div class="row comment-text">
@@ -34,7 +34,7 @@
         {%- endcache -%}
         {%- if current_user.is_authenticated() and not edit and not filters%}
         {%- if not item_page and depth < 8 %} 
-        <small class="reply text-muted"><a href="{{url_for('item_comment', id=comment.id)}}">reply</a></small>
+        <small class="reply text-muted"><a href="{{url_for('frontend.item_comment', id=comment.id)}}">reply</a></small>
         {%- endif -%}
         {%- endif -%}
     </div>

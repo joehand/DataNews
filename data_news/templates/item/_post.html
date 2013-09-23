@@ -9,20 +9,20 @@
             {%- cache 60*60*24, 'item_title', item.__str__(), item.changed -%}
             {%- if item.url %}
             <a href="{{item.url}}" data-pjax>{{item.title|safe}}</a> 
-            <small class="text-muted">({{get_domain(item.url)}})</small>
+            <small class="text-muted">({{item.url|domain}})</small>
             {%- else -%}
-            <a href="{{url_for('item', id=item.id)}}" data-pjax>{{item.title|safe}}</a>
+            <a href="{{url_for('frontend.item', id=item.id)}}" data-pjax>{{item.title|safe}}</a>
             {% endif -%}
             {%- endcache -%}
         </h4>
     </div>
     <div class="row post-info">
         <p><span class="vote-count"><b>{{item.votes|length}}</b></span> | From 
-        {% cache 60*60*24, 'user', item.user.name -%}<a href="{{url_for('user', name=item.user.name)}}" data-pjax>{{item.user.name}}</a>{% endcache %}
-        <span>{{pretty_date(item.timestamp)}}</span> | 
-        <span><a href="{{url_for('item', id=item.id)}}" data-pjax>{{item.get_children()|length}} comments</a></span>
+        {% cache 60*60*24, 'user', item.user.name -%}<a href="{{url_for('user.user', name=item.user.name)}}" data-pjax>{{item.user.name}}</a>{% endcache %}
+        <span>{{item.timestamp|time_ago}}</span> | 
+        <span><a href="{{url_for('frontend.item', id=item.id)}}" data-pjax>{{item.get_children()|length}} comments</a></span>
         {%- if owner and not edit %}
-            | <a href="{{url_for('item_edit', id=item.id)}}" data-pjax>Edit</a>
+            | <a href="{{url_for('frontend.item_edit', id=item.id)}}" data-pjax>Edit</a>
         {% endif -%}
         </p>
     </div>

@@ -4,7 +4,7 @@
 {%- block content -%}
         <div class="row">
           <h1>Submit Post</h1>
-          <p>Rather not fill out a form? <a href="{{url_for('page', title='submit_via_twitter')}}">Submit via Twitter!</a></p><br/>
+          <p>Rather not fill out a form? <a href="{{url_for('frontend.page', title='submit_via_twitter')}}">Submit via Twitter!</a></p><br/>
         </div>
         <div class="row">
             <form class="form form-horizontal" method="post" action="{{request.url}}" data-pjax>

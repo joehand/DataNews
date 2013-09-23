@@ -1,58 +1,28 @@
-from data_news import app, db, cache
-from flask import render_template, request, flash, abort, \
-                 redirect, url_for, jsonify, session, make_response, g
+from data_news import db, cache
+from ..utils import ALLOWED_TAGS, SUPER_TAGS
+
+from .models import Item, Vote
+from .forms import PostForm, CommentForm
+
+from flask import (render_template, request, flash, Blueprint,
+                   redirect, url_for, jsonify, session, make_response)
+
 from flask.ext.security import login_required, current_user
 from flask.ext.classy import FlaskView, route
 from flask.ext.cache import make_template_fragment_key
-from sqlalchemy import or_
+
+from markdown import Markdown
+from markdownify import markdownify
+from bleach import clean
+
 from urlparse import urlparse
 from datetime import datetime
 import json
 import urllib
-from markdown import Markdown
-from markdownify import markdownify
-from bleach import clean
-from models import Item, User, Vote
-from forms import PostForm, CommentForm, UserForm, SearchForm
 
+frontend = Blueprint('frontend', __name__)
 
-# Tags allowed in comment forms
-# SuperAdmins get extra tags to create 'pages'
 md = Markdown()
-allowed_tags = ['a', 'p','em','strong','code','pre','blockquote','ul','li','ol']
-super_tags = ['a', 'p','em','strong','code','pre','blockquote',
-                'ul','li','ol','h3','h4','h5','h6','img']
-
-@cache.cached(timeout=60*60*24*7, key_prefix='all_pages')
-def get_pages():
-    """ Get the pages to show in footer
-        These are special 'items' with kind=page or kind=external
-        External ones are links to, you guessed it, external websites
-    """
-    pages = Item.query.filter(or_(Item.kind=='page', Item.kind=='external')).order_by(Item.title).all()
-    return [page for page in pages]
-
-@app.before_first_request
-def before_first():
-    """ Create a permanent session
-        Track new login for authenticated users
-    """
-    session.permanent = True
-    if current_user.is_authenticated():
-        current_user.current_login_at = datetime.utcnow()
-        db.session.commit()
-
-@app.before_request
-def before_request():
-    """ Get our footer pages. 
-        TODO: This should be done once in before_first but that wasn't working
-
-        We check if user is anonymous and first time visitor to show a "welcome" message
-    """
-    g.pages = get_pages()
-    if current_user.is_anonymous() and session.get('visited_index', False):
-        session['return_anon'] = True
-
 
 class ItemView(FlaskView):
     """ Our base ViewClass for any Item related endpoings (posts, comments, pages)
@@ -68,9 +38,11 @@ class ItemView(FlaskView):
         """ Cleans up submitted text from users
         """
         if current_user.is_super:
-            return clean(md.convert(text), super_tags)
+            text = clean(md.convert(text), SUPER_TAGS)
         else:
-            return clean(md.convert(text), allowed_tags)
+            text = clean(md.convert(text), ALLOWED_TAGS)
+        
+        return text
 
     def _submit_item(self, url=None, title=None, text=None, 
                             kind='comment', parent_id=None):
@@ -195,7 +167,7 @@ class ItemView(FlaskView):
             return render_template('item/item.html',
                 item = item, form = commentForm, title=item.title, edit=True)
         else:
-            return redirect(url_for('item', id=id))
+            return redirect(url_for('.item', id=id))
 
 
     @route('/reply/<int:id>', endpoint='item_comment')
@@ -210,7 +182,7 @@ class ItemView(FlaskView):
             return jsonify(html = render_template('item/_comment_form.html',
                         item = item, form = commentForm))
         else:
-            return redirect(url_for('item', id=id))
+            return redirect(url_for('.item', id=id))
 
     @route('/submit', endpoint='submit')
     @login_required
@@ -232,7 +204,7 @@ class ItemView(FlaskView):
 
             if post:
                 flash('URL already submitted', category = 'warning')
-                return redirect(url_for('item', id=post.id))
+                return redirect(url_for('.item', id=post.id))
 
             if current_user.is_super and form.kind.data:
                 kind = form.kind.data
@@ -249,7 +221,7 @@ class ItemView(FlaskView):
 
             # Make new response and set url header for PJAX
             response = make_response(self.get_item(post.id))
-            response.headers['X-PJAX-URL'] = url_for('item', id=post.id)
+            response.headers['X-PJAX-URL'] = url_for('frontend.item', id=post.id)
             return response
         else:
             return render_template('item/submit.html', form=form, title='Submit')
@@ -323,7 +295,7 @@ class ItemView(FlaskView):
             flash('Edit saved', 'info')
             response = make_response(render_template('item/item.html',
                         item = item, form = commentForm, title=item.title, edit=True))
-            next_url = url_for('item_edit', id=item.id)
+            next_url = url_for('frontend.item_edit', id=item.id)
 
             response.headers['X-PJAX-URL'] = next_url
             return response
@@ -355,71 +327,6 @@ class ItemView(FlaskView):
 
         return jsonify(vote.serialize)
 
-class UserView(FlaskView):
-    """ Get the beautiful user page
-        Also a user can edit their own info here
-        Base url is /user
-        TODO: Add about section? And gravatar option?
-              If we do more complex stuff, 
-              allow use to see 'public' profile via request arg
-        TODO: Clean up user index & make userful
-    """
-    @route('/')
-    @route('/<int:page>')
-    def index(self, page=1):
-        """ Show list of all users. Pretty useless right now
-        """
-        users_obj = User.query.paginate(page)
-        return render_template('item/list.html', items=users_obj)
-
-    @route('/<name>', endpoint='user')
-    def get(self, name):
-        """ Show specific user
-            Put in form for editing if user = current user
-        """
-        user = User.find_user_by_name(name).first_or_404()
-        if user == current_user:
-            form = UserForm()
-            return render_template('user/user.html', user=user, form=form, title=user.name)
-        return render_template('user/user.html', user=user, title=user.name)
-
-    @route('/active', endpoint='active_user')
-    @login_required
-    def active_user(self):
-        """ Quick link for going to profile of current user
-        """
-        return redirect(url_for('user', name=current_user.name))
-
-    def post(self, name):
-        """ Submit changes for user.
-            NOT used to create a new user (that is done via flask-security)
-        """
-        user = User.find_user_by_name(name).first_or_404()
-        form = UserForm()
-        if user == current_user and form.validate_on_submit(): 
-            old_name = current_user.name
-            if form.email.data != '':   
-                user.email = form.email.data
-            user.name = form.name.data
-            user.twitter_handle = form.twitter.data
-            db.session.commit()
-
-            key = make_template_fragment_key("user", vary_on=[old_name])
-            cache.delete(key)
-
-            flash('Your edits are saved, thanks.', category = 'info')
-            return redirect(url_for('user', name=form.name.data)) 
-
 #Register our View Classes
-ItemView.register(app)
-UserView.register(app)
+ItemView.register(frontend)
 
-
-@app.errorhandler(404)
-def internal_404(error):
-    return render_template('error/404.html'), 404
-
-@app.errorhandler(500)
-def internal_500(error):
-    db.session.rollback()
-    return render_template('error/500.html'), 500

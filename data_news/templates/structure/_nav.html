@@ -15,19 +15,19 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="{{url_for('index')}}" data-pjax>DataNews</a>
+      <a class="navbar-brand" href="{{url_for('frontend.index')}}" data-pjax>DataNews</a>
     </div>
     <nav class="navbar-collapse bs-navbar-collapse collapse" role="navigation" style="height: auto;">
           <ul class="nav navbar-nav">
-            {{nav_link('index', 'Home')}}
-            {{nav_link('items', 'Recent', url_args={'kind':'post'})}}
+            {{nav_link('frontend.index', 'Home')}}
+            {{nav_link('frontend.items', 'Recent', url_args={'kind':'post'})}}
             {%- if current_user.is_authenticated() %}
-            {{nav_link('submit', 'Submit')}}
+            {{nav_link('frontend.submit', 'Submit')}}
             {% endif -%}
           </ul>
           <ul class="nav navbar-nav navbar-right">
             {%- if current_user.is_authenticated() %}
-              <li class="pjax-active">{%- cache 60*60*5, 'user', current_user.name -%}<a href="{{url_for('user', name=current_user.name)}}" data-pjax>{{current_user.name}}</a>{% endcache %}</li>
+              <li class="pjax-active">{%- cache 60*60*5, 'user', current_user.name -%}<a href="{{url_for('user.user', name=current_user.name)}}" data-pjax>{{current_user.name}}</a>{% endcache %}</li>
               <li class=""><a href="{{url_for('security.logout')}}">Logout</a></li>
             {% else %}
               <li class=""><a href="{{url_for('security.login')}}">Login</a></li>
