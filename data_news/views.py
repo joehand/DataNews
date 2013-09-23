@@ -118,7 +118,7 @@ class ItemView(FlaskView):
             TODO: More awesomeness!
         """
         posts = Item.ranked_posts(page)
-        return render_template('list.html',
+        return render_template('item/list.html',
             items = posts, title='Home')
 
     @route('/item/<int:id>', endpoint='item')
@@ -142,7 +142,7 @@ class ItemView(FlaskView):
         title = item.title
         if item.kind == 'comment':
             title = item.user.name + ' comment'
-        return render_template('item.html',
+        return render_template('item/item.html',
             item = item, form = commentForm, title=title)
 
     @route('/<title>', endpoint='page')
@@ -152,7 +152,7 @@ class ItemView(FlaskView):
         """
         page = Item.find_by_title(title)
         commentForm = self._commentForm(request)
-        return render_template('item.html',
+        return render_template('item/item.html',
             item = page, form = commentForm, title=page.title)
 
     @route('/items', endpoint='items')
@@ -177,7 +177,7 @@ class ItemView(FlaskView):
             items_obj = Item.query.order_by(Item.timestamp.desc()).filter_by(**filters).paginate(page)
         else:
             items_obj = Item.query.order_by(Item.timestamp.desc()).paginate(page)
-        return render_template('list.html', items=items_obj, filters=filters, title='Recent')
+        return render_template('item/list.html', items=items_obj, filters=filters, title='Recent')
 
 
     @route('/item/edit/<int:id>', endpoint='item_edit')
@@ -192,7 +192,7 @@ class ItemView(FlaskView):
             commentForm.text.data = markdownify(item.text)
             commentForm.edit.data = True
 
-            return render_template('item.html',
+            return render_template('item/item.html',
                 item = item, form = commentForm, title=item.title, edit=True)
         else:
             return redirect(url_for('item', id=id))
@@ -207,7 +207,7 @@ class ItemView(FlaskView):
         if request.headers.get('formJSON', False):
             item = Item.query.get_or_404(id)
             commentForm = self._commentForm(request)
-            return jsonify(html = render_template('_comment_form.html',
+            return jsonify(html = render_template('item/_comment_form.html',
                         item = item, form = commentForm))
         else:
             return redirect(url_for('item', id=id))
@@ -218,7 +218,7 @@ class ItemView(FlaskView):
         """ Get page for submitting new post!
         """
         form = PostForm(request.values, kind="post")
-        return render_template('submit.html', form=form, title='Submit')
+        return render_template('item/submit.html', form=form, title='Submit')
 
 
     @route('/submit', methods=['POST'])
@@ -252,7 +252,7 @@ class ItemView(FlaskView):
             response.headers['X-PJAX-URL'] = url_for('item', id=post.id)
             return response
         else:
-            return render_template('submit.html', form=form, title='Submit')
+            return render_template('item/submit.html', form=form, title='Submit')
 
     @route('/item/<int:id>', methods=['POST'])
     @route('/<title>', methods=['POST'])
@@ -270,7 +270,7 @@ class ItemView(FlaskView):
                 flash('Thanks for adding to the discussion!', category = 'success')
             else:
                 flash('Something went wrong adding your comment. Please try again', category='error')
-                return render_template('submit.html', form=form, title='Submit')
+                return render_template('item/submit.html', form=form, title='Submit')
 
             # Figure out what url we submitted from so we can keep them there
             next_url = request.headers.get('source_url', request.url)
@@ -291,12 +291,12 @@ class ItemView(FlaskView):
             commentForm.text.data = '' #form data isn't clearing, so do it manually
 
             # Make new response and set url header for PJAX
-            response = make_response(render_template('item.html',
+            response = make_response(render_template('item/item.html',
                                     item = item, form = commentForm, title=item.title))
             response.headers['X-PJAX-URL'] = next_url
             return response
         else:
-            return render_template('submit.html', form=form, title='Submit')
+            return render_template('item/submit.html', form=form, title='Submit')
 
 
 
@@ -321,14 +321,14 @@ class ItemView(FlaskView):
             cache.delete(key)
 
             flash('Edit saved', 'info')
-            response = make_response(render_template('item.html',
+            response = make_response(render_template('item/item.html',
                         item = item, form = commentForm, title=item.title, edit=True))
             next_url = url_for('item_edit', id=item.id)
 
             response.headers['X-PJAX-URL'] = next_url
             return response
         else:
-            return render_template('item.html',
+            return render_template('item/item.html',
                         item = item, form = commentForm, title=item.title, edit=True)
 
     @route('/vote/<int:id>', methods=['POST'], endpoint='vote')
@@ -370,7 +370,7 @@ class UserView(FlaskView):
         """ Show list of all users. Pretty useless right now
         """
         users_obj = User.query.paginate(page)
-        return render_template('list.html', items=users_obj)
+        return render_template('item/list.html', items=users_obj)
 
     @route('/<name>', endpoint='user')
     def get(self, name):
@@ -380,8 +380,8 @@ class UserView(FlaskView):
         user = User.find_user_by_name(name).first_or_404()
         if user == current_user:
             form = UserForm()
-            return render_template('user.html', user=user, form=form, title=user.name)
-        return render_template('user.html', user=user, title=user.name)
+            return render_template('user/user.html', user=user, form=form, title=user.name)
+        return render_template('user/user.html', user=user, title=user.name)
 
     @route('/active', endpoint='active_user')
     @login_required
@@ -417,9 +417,9 @@ UserView.register(app)
 
 @app.errorhandler(404)
 def internal_404(error):
-    return render_template('404.html'), 404
+    return render_template('error/404.html'), 404
 
 @app.errorhandler(500)
 def internal_500(error):
     db.session.rollback()
-    return render_template('500.html'), 500
+    return render_template('error/500.html'), 500

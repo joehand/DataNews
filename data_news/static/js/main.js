@@ -11,10 +11,6 @@ define([
     'bootstrap',
     'pjax'
 ], function (Backbone, _, $, AppModel, AppView) {
-    
+    // This file is getting a bit complex ;)
     var appView = new AppView();
-    //var appModel = new AppModel();
-
-    //console.log(appView);
-
 });

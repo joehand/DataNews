@@ -1,3 +1,4 @@
+/* Builds the minified js file*/
 ({
     out: "../js/app.min.js",
     name: 'app',

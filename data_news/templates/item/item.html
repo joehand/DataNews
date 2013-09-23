@@ -1,22 +1,22 @@
-{% extends "_base.html" %}
+{% extends "structure/_base.html" %}
 
 {%- block content %}
 <div class="row">
     <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
     {% set item_page = True %}
     {%- if item.kind == 'post' %}
-    {% include "_post.html" %}
+    {% include "item/_post.html" %}
     {% elif item.kind == 'page' %}
-    {% include "_page.html" %}
+    {% include "item/_page.html" %}
     {% elif item.kind == 'comment' %}
-    {% include "_comment.html" %}
+    {% include "item/_comment.html" %}
     {% endif -%}
     </div>
 </div>
 <div class="row">
     <div class="col-md-12 col-lg-12 col-sm-12 col-xs-12">
     {%- if current_user.is_authenticated() %}
-    {% include "_comment_form.html" %}
+    {% include "item/_comment_form.html" %}
     {% else %}
     <div class="panel panel-default">
         <div class="panel-body">
@@ -34,7 +34,7 @@
     {% set depth = 8 %}
     {% endif -%}
 <div class="row">
-  {%- include "_comment.html" %}
+  {%- include "item/_comment.html" %}
 </div>
 {%- endfor %}
 {% endif -%}

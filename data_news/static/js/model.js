@@ -5,9 +5,7 @@
  */
 define(['backbone', 'underscore'], function(Backbone, _) {
 
-    var API_VER = 'v0',
-        API_ROOT = '/api/' + API_VER + '/'
-
+    /* Just used to submit votes right now */
     var Vote = Backbone.Model.extend({
         initialize: function(options) {
           this.url = this.collection.url + options.item_id

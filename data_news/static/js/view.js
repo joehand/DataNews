@@ -16,7 +16,7 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, votes) {
             var $targ = $(e.currentTarget);
 
             if (!currentUser) {
-               document.location.href = '/login'; //better way to do this?
+               document.location.href = '/login'; //TODO: better way to do this?
             } else {
                 if (!$targ.hasClass('invisible')) {
                     $targ.addClass('invisible')
@@ -225,8 +225,6 @@ define(['backbone', 'jquery', 'model'], function(Backbone, $, votes) {
             } else {
                 $el.animate({'opacity': '0'}, 50);
             }
-
-
         },
 
         initItem: function(el) {

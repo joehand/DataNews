@@ -1,4 +1,4 @@
-{% import "_wtf.html" as wtf %}
+{% import "macros/_wtf.html" as wtf %}
 {%- if edit -%}
 {% set form_url = url_for('item_edit', id=item.id) %}
 {%- elif item.kind == 'page' -%}

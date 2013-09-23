@@ -20,7 +20,7 @@
     <meta name="description" content="{% block description %}{{description}}{% endblock description %}">
     <meta name="author" content="{% block author %}DataNews{% endblock author %}">
     {%- block style %}
-      {% include "_css.html" %}
+      {% include "structure/_css.html" %}
     {%- endblock style %}
     <script src="//ajax.googleapis.com/ajax/libs/webfont/1.4.7/webfont.js"></script>
     <script>
@@ -33,13 +33,13 @@
   </head>
   <body>
   {%- block nav %}
-    {% include "_nav.html" %}
+    {% include "structure/_nav.html" %}
   {% endblock nav -%}
     <div id="main-container" class="container">  
     <div id="main" role="main" class="col-lg-12 col-md-12 col-sm-12 col-xs-12"> 
 {%- endif -%}
     {%- block messages -%}
-      {% include "_messages.html" %}
+      {% include "structure/_messages.html" %}
     {%- endblock messages -%}
     {%- block content -%}
     {%- endblock content -%}
@@ -48,11 +48,11 @@
     </div> <!-- #main -->
 
     {%- block footer %}
-      {% include "_footer.html" %}
+      {% include "structure/_footer.html" %}
     {% endblock footer %}
     </div> <!-- /container -->
   {%- block js %}
-    {% include "_js.html" %}
+    {% include "structure/_js.html" %}
   {%- endblock js %}
   </body>
 </html>

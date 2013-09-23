@@ -46,6 +46,9 @@ class ProductionConfig(Config):
     ASSETS_AUTO_BUILD = False
     SEND_FILE_MAX_AGE_DEFAULT = 2592000
 
+    GOOGLE_ANALYTICS_ID = 'UA-43826604-1'
+    GOOGLE_ANALYTICS_DOMAIN = 'datanews.co'
+
 class DevelopmentConfig(Config):
     DEBUG = True
     SECRET_KEY = 'this_is_so_secret' #used for development, reset in prod
