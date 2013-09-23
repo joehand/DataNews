@@ -99,7 +99,7 @@ def build_js(gzip=False):
         TODO: Build css here too. Right now flask-assets and flask-script don't play well
     """
     jsfile = 'app.min.' + app.config['JS_VERSION'] + '.js'
-    os.system('cd data_news/static/js && node ../../../r.js -o app.build.js out=%s'%jsfile)
+    os.system('cd data_news/static/js && node lib/r.js -o app.build.js out=%s'%jsfile)
     jsfile = 'data_news/static/js/' + jsfile
     require = 'data_news/static/js/require.js'
     if gzip:
