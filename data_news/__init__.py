@@ -32,7 +32,11 @@ else:
 db = SQLAlchemy(app)
 cache = init_cacheify(app)
 
-"""Import our blueprints"""
+"""
+    Import our blueprints
+    Right now we are relying on the app in admin/api
+    This should be changed to use application factory
+"""
 from .api import api
 from .admin import admin
 from .user import user
