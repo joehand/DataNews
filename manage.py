@@ -91,8 +91,8 @@ def db_migrate(message):
     print message
     os.system('alembic revision --autogenerate -m "%s"' % message)
 
-@manager.command
-def build_js(gzip=False):
+@manager.option('-g', '--gzip', dest='gzip', default=False)
+def build_js(gzip):
     """ Builds the js for production
         Update JS_VERSION before doing this
         Optionally, gzip the javascript (must change how served)
