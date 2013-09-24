@@ -17,7 +17,11 @@ fileConfig(config.config_file_name)
 # for 'autogenerate' support
 # from myapp import mymodel
 # target_metadata = mymodel.Base.metadata
-from data_news.models import *
+
+from data_news.user import User, Role
+from data_news.frontend import Item, Vote
+from data_news.background import Twitter
+
 from data_news import db
 target_metadata = db.metadata
 
